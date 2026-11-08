@@ -202,6 +202,33 @@ em{font-style:italic}
 .pick-dot.m{background:#0b6e6a}.pick-dot.v{background:#3a5bd0}
 .cal-note{margin:12px 2px 0;font-size:.82rem;color:var(--ink-2)}
 
+[hidden]{display:none!important}
+.ev.mine{background:var(--c);border-left-color:var(--c-ink);color:#fff}
+.slot:disabled{opacity:.45;cursor:default}
+.slot:disabled:hover{border:1.5px dashed #cfcfd6;background:#fff;color:var(--ink-2)}
+.btn-block{width:100%}
+.form-err{min-height:1.4em;margin:0;color:#b3261e;font-size:.92rem;font-weight:560}
+.field input[aria-invalid="true"]{border-color:#b3261e;box-shadow:0 0 0 4px rgba(179,38,30,.14)}
+.or{text-align:center;color:var(--ink-2);font-size:.9rem;margin:6px 0 0}
+.confirm{background:var(--tint);border-radius:var(--radius);padding:clamp(24px,5vw,44px);text-align:center;outline:none;animation:fadeUp .6s var(--ease)}
+.confirm[hidden]{display:none}
+.confirm-check{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;margin:0 auto 18px;animation:pop .6s var(--ease)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.confirm h3{font-size:clamp(1.6rem,4vw,2.1rem)}
+.confirm-lead{color:var(--ink-2);margin:10px 0 24px}
+.confirm-list{text-align:left;background:#fff;border-radius:18px;margin:0 0 22px;padding:6px 20px}
+.confirm-list div{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.confirm-list div:last-child{border-bottom:0}
+.confirm-list dt{flex:0 0 84px;color:var(--ink-2);font-size:.9rem}
+.confirm-list dd{margin:0;font-weight:560}
+.bubble-wrap{text-align:left;margin-bottom:24px}
+.bubble-label{font-size:.82rem;color:var(--ink-2);margin:0 0 8px 4px}
+.bubble{background:#fff;border-radius:18px 18px 18px 6px;padding:14px 16px;max-width:92%;box-shadow:0 1px 2px rgba(0,0,0,.08);font-size:.95rem;line-height:1.45}
+.confirm-actions{margin:18px 0 6px}
+.linklike{font:inherit;background:none;border:0;padding:8px;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px}
+.linklike:hover{color:var(--ink)}
+@media (max-width:520px){.confirm-list div{flex-direction:column;gap:2px}.confirm-list dt{flex:none}}
+
 /* Modulo */
 .booking{background:var(--tint);border-radius:var(--radius);padding:clamp(24px,5vw,44px);text-align:left;display:grid;gap:18px}
 .field label{display:block;font-weight:560;font-size:.95rem;margin-bottom:8px}

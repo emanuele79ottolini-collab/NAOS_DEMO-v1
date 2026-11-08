@@ -15,10 +15,27 @@
   var fWho = document.getElementById('f-who');
   var fWhen = document.getElementById('f-when');
 
+  var form = document.getElementById('booking');
+  var fNameEl = document.getElementById('f-name');
+  var fTel = document.getElementById('f-tel');
+  var confirmBtn = document.getElementById('confirmBtn');
+  var orLine = document.getElementById('orLine');
+  var formErr = document.getElementById('formErr');
+  var conf = document.getElementById('confirm');
+
   var PROFS = {
-    m: { name: 'Dott.ssa Mazzi', val: '393772609553|Dott.ssa Mazzi' },
-    v: { name: 'Dott. Vighi', val: '393356822198|Dott. Vighi' }
+    m: { name: 'Dott.ssa Mazzi', full: 'la Dott.ssa Federica Mazzi', who: 'Dott.ssa Federica Mazzi', phone: '393772609553', val: '393772609553|Dott.ssa Mazzi' },
+    v: { name: 'Dott. Vighi', full: 'il Dott. Flaviano Vighi', who: 'Dott. Flaviano Vighi', phone: '393356822198', val: '393356822198|Dott. Vighi' }
   };
+  var STORE_KEY = 'naos-booking-demo';
+  var ADDRESS = 'Via Amerigo Vespucci 3, 37060 Lugagnano di Sona (VR)';
+
+  function store(val) {
+    try {
+      if (val === undefined) return window.localStorage.getItem(STORE_KEY);
+      if (val === null) window.localStorage.removeItem(STORE_KEY); else window.localStorage.setItem(STORE_KEY, val);
+    } catch (e) { return null; }
+  }
   var MAX_WEEKS = 6;            // settimane prenotabili in avanti
   var HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
   var LUNCH = 13;
@@ -39,7 +56,7 @@
   var monday0 = addDays(today, -((today.getDay() + 6) % 7));
   var lastDay = addDays(today, MAX_WEEKS * 7);
 
-  var state = { prof: 'm', week: 0, day: 0, sel: null };
+  var state = { prof: 'm', week: 0, day: 0, sel: null, booking: null };
 
   function bookable(d) { return d > today && d <= lastDay; }
 
@@ -102,10 +119,13 @@
       for (var j = 0; j < DAYS; j++) {
         var dd = dayOf(state.week, j), slots = cache[j], on = j === state.day ? ' onday' : '';
         var st = slots ? slots[hh] : 'past';
-        if (st === 'free') {
-          var isSel = state.sel && state.sel.prof === p && state.sel.date === iso(dd) && state.sel.h === hh;
+        var bk = state.booking;
+        if (bk && bk.prof === p && bk.date === iso(dd) && bk.h === hh) {
+          html += '<div class="c' + on + '"><div class="ev mine"><span class="t">' + pad(hh) + ':00</span><span class="s">Il tuo appuntamento</span></div></div>';
+        } else if (st === 'free') {
+          var isSel =state.sel && state.sel.prof === p && state.sel.date === iso(dd) && state.sel.h === hh;
           html += '<div class="c' + on + '"><button type="button" class="slot' + (isSel ? ' sel' : '') + '" data-d="' + iso(dd) + '" data-h="' + hh +
-            '" aria-pressed="' + !!isSel + '" aria-label="' + slotLabel(p, dd, hh) + (isSel ? ', scelto' : ', libero') + '">' +
+            '" aria-pressed="' + !!isSel + '"' + (bk ? ' disabled' : '') + ' aria-label="' + slotLabel(p, dd, hh) + (isSel ? ', scelto' : ', libero') + '">' +
             '<span class="t">' + pad(hh) + ':00</span><span class="s">' + (isSel ? 'Scelto' : 'Libero') + '</span></button></div>';
         } else if (st === 'busy') {
           html += '<div class="c' + on + '"><div class="ev"><span class="t">' + pad(hh) + ':00</span><span class="s">Occupato</span></div></div>';
@@ -121,7 +141,12 @@
     gridEl.innerHTML = html;
     daysEl.innerHTML = chips;
 
-    if (state.sel) {
+    if (state.booking) {
+      var bd = new Date(state.booking.date + 'T00:00:00');
+      pickEl.innerHTML = '<div class="pick-txt"><span class="pick-dot ' + state.booking.prof + '"></span><div><b>Confermato: ' +
+        cap(fmtDay.format(bd)) + ' alle ' + pad(state.booking.h) + ':00</b><span>' + PROFS[state.booking.prof].name +
+        ' · annulla per sceglierne un altro</span></div></div><button type="button" class="btn btn-wa btn-small" id="calCancel">Annulla</button>';
+    } else if (state.sel) {
       var sd = new Date(state.sel.date + 'T00:00:00');
       pickEl.innerHTML = '<div class="pick-txt"><span class="pick-dot ' + state.sel.prof + '"></span><div><b>' +
         cap(fmtDay.format(sd)) + ' alle ' + pad(state.sel.h) + ':00</b><span>' + PROFS[state.sel.prof].name + ' · colloquio</span></div></div>' +
@@ -147,7 +172,83 @@
     var b = e.target.closest('.chip');
     if (b && !b.disabled) { state.day = +b.getAttribute('data-day'); render(); }
   });
+  /* ---- Conferma simulata ---- */
+  function showError(msg, el) {
+    formErr.textContent = msg;
+    if (el) { el.setAttribute('aria-invalid', 'true'); el.focus(); }
+  }
+
+  function bookingMessage(b) {
+    var d = new Date(b.date + 'T00:00:00'), first = b.name.split(/\s+/)[0];
+    return 'Buongiorno ' + first + ', il tuo appuntamento con ' + PROFS[b.prof].full + ' è confermato per ' +
+      fmtDay.format(d) + ' alle ' + pad(b.h) + ':00. Ti aspettiamo in ' + ADDRESS + '. A presto, Studio Naòs.';
+  }
+
+  function showConfirm() {
+    var b = state.booking, d = new Date(b.date + 'T00:00:00');
+    document.getElementById('confLead').textContent = 'Grazie ' + b.name.split(/\s+/)[0] + ', ti aspettiamo allo studio.';
+    document.getElementById('confWhen').textContent = cap(fmtDay.format(d)) + ' alle ' + pad(b.h) + ':00 (durata 1 ora)';
+    document.getElementById('confWho').textContent = PROFS[b.prof].who;
+    document.getElementById('confName').textContent = b.name + (b.tel ? ' · ' + b.tel : '');
+    document.getElementById('confMsg').textContent = bookingMessage(b);
+    document.getElementById('confWa').href = 'https://wa.me/' + PROFS[b.prof].phone + '?text=' +
+      encodeURIComponent('Buongiorno, sono ' + b.name + '. Scrivo per l\'appuntamento di ' + fmtDay.format(d) + ' alle ' + pad(b.h) + ':00.');
+    form.hidden = true;
+    conf.hidden = false;
+  }
+
+  function clearBooking() {
+    state.booking = null; state.sel = null;
+    store(null);
+    conf.hidden = true; form.hidden = false;
+    if (fWhen) { fWhen.value = ''; fWhen.dispatchEvent(new Event('input', { bubbles: true })); }
+    render();
+  }
+
+  function icsText(b) {
+    var d = b.date.replace(/-/g, ''), s = pad(b.h) + '0000', e = pad(b.h + 1) + '0000', n = new Date();
+    var stamp = n.getUTCFullYear() + pad(n.getUTCMonth() + 1) + pad(n.getUTCDate()) + 'T' + pad(n.getUTCHours()) + pad(n.getUTCMinutes()) + pad(n.getUTCSeconds()) + 'Z';
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Studio Naos//Demo//IT', 'BEGIN:VEVENT',
+      'UID:' + b.date + '-' + b.h + '-' + b.prof + '@studionaos-demo', 'DTSTAMP:' + stamp,
+      'DTSTART:' + d + 'T' + s, 'DTEND:' + d + 'T' + e,
+      'SUMMARY:Colloquio - Studio Naòs (simulazione)',
+      'LOCATION:' + ADDRESS.replace(/,/g, '\\,'),
+      'DESCRIPTION:Con ' + PROFS[b.prof].who + '. Simulazione dimostrativa.',
+      'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  }
+
+  confirmBtn.addEventListener('click', function () {
+    formErr.textContent = '';
+    fNameEl.removeAttribute('aria-invalid');
+    if (!state.sel) {
+      formErr.textContent = 'Scegli prima un orario libero nel calendario.';
+      root.scrollIntoView({ block: 'start' });
+      return;
+    }
+    var name = fNameEl.value.trim();
+    if (!name) { showError('Inserisci il tuo nome per confermare.', fNameEl); return; }
+    state.booking = { prof: state.sel.prof, date: state.sel.date, h: state.sel.h, name: name, tel: fTel.value.trim() };
+    store(JSON.stringify(state.booking));
+    showConfirm();
+    render();
+    conf.scrollIntoView({ block: 'center' });
+    conf.focus({ preventScroll: true });
+  });
+  fNameEl.addEventListener('input', function () { formErr.textContent = ''; fNameEl.removeAttribute('aria-invalid'); });
+  document.getElementById('confCancel').addEventListener('click', clearBooking);
+  document.getElementById('confIcs').addEventListener('click', function () {
+    var b = state.booking; if (!b) return;
+    try {
+      var url = URL.createObjectURL(new Blob([icsText(b)], { type: 'text/calendar;charset=utf-8' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = 'appuntamento-studio-naos.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    } catch (e) { /* nessun download disponibile */ }
+  });
+
   pickEl.addEventListener('click', function (e) {
+    if (e.target.closest('#calCancel')) { clearBooking(); return; }
     if (e.target.closest('#calGo')) {
       var n = document.getElementById('f-name');
       if (n) setTimeout(function () { n.focus({ preventScroll: true }); }, 400);
@@ -170,6 +271,22 @@
   });
 
   state.day = firstBookableDay(0);
+  confirmBtn.hidden = false; orLine.hidden = false;
+
+  // Ripristina un'eventuale prenotazione simulata fatta in precedenza (se ancora valida)
+  try {
+    var saved = JSON.parse(store() || 'null');
+    if (saved && PROFS[saved.prof] && saved.name && bookable(new Date(saved.date + 'T00:00:00'))) {
+      state.booking = saved; state.sel = { prof: saved.prof, date: saved.date, h: saved.h };
+      state.prof = saved.prof;
+      Array.prototype.forEach.call(radios, function (r) { r.checked = r.value === saved.prof; });
+      var sd0 = new Date(saved.date + 'T00:00:00');
+      state.week = Math.max(0, Math.min(MAX_WEEKS - 1, Math.floor(Math.round((startOfDay(sd0) - monday0) / 86400000) / 7)));
+      state.day = (sd0.getDay() + 6) % 7;
+      showConfirm();
+    } else if (saved) { store(null); }
+  } catch (e) { store(null); }
+
   root.hidden = false;
   render();
 })();
