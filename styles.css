@@ -42,7 +42,11 @@ em{font-style:italic}
 .site-header.scrolled{border-bottom-color:var(--line)}
 .bar{width:min(1080px,100% - 32px);margin-inline:auto;height:var(--header-h);display:flex;align-items:center;gap:20px}
 .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:650;letter-spacing:-.01em;font-size:1.05rem;margin-right:auto}
-.brand-mark{color:var(--accent)}
+.brand{color:#6e6e73}
+.brand-logo{height:46px;width:auto;display:block}
+.brand-logo text{font-family:var(--font);font-weight:500;font-size:11px;letter-spacing:.32em;fill:currentColor;text-anchor:middle}
+.foot-brand{display:flex;align-items:center;gap:10px}
+.foot-mark{width:26px;height:26px;color:#6e6e73;flex:none}
 .nav{display:flex;gap:26px}
 .nav a{color:var(--ink-2);text-decoration:none;font-size:.9rem;transition:color .2s}
 .nav a:hover,.nav a[aria-current="true"]{color:var(--ink)}
