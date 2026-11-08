@@ -126,7 +126,7 @@
     var tel = fTel.value.trim();
     var text = 'Buongiorno ' + parts[1] + ', vorrei fissare un appuntamento.';
     if (name) text += '\nMi chiamo ' + name + '.';
-    if (when) text += '\nPreferirei essere ricontattato: ' + when + '.';
+    if (when) text += '\nGiorno e orario richiesto: ' + when + '.';
     if (tel) text += '\nPotete richiamarmi al ' + tel + '.';
     text += '\nGrazie.';
     return { phone: parts[0], text: text };

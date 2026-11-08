@@ -390,9 +390,34 @@
       <div class="section-head reveal">
         <p class="eyebrow">Primo passo</p>
         <h2>Fissa un appuntamento.</h2>
-        <p class="sub">Compila i campi e scegli come inviare la richiesta: il messaggio sarà già pronto. Ti risponderemo il prima possibile.</p>
+        <p class="sub">Scegli lo psicologo e un orario libero nel calendario, poi invia la richiesta: il messaggio sarà già pronto. Lo studio ti confermerà l’appuntamento.</p>
       </div>
+    </div>
 
+    <!-- Calendario di prenotazione (dimostrativo) -->
+    <div class="wrap">
+      <div class="cal reveal" id="cal" hidden>
+        <div class="cal-top">
+          <fieldset class="cal-who">
+            <legend class="sr">Calendario dello psicologo</legend>
+            <label class="who who-m"><input type="radio" name="cal-who" value="m" checked><span class="dot" aria-hidden="true"></span>Dott.ssa Mazzi</label>
+            <label class="who who-v"><input type="radio" name="cal-who" value="v"><span class="dot" aria-hidden="true"></span>Dott. Vighi</label>
+          </fieldset>
+          <div class="cal-nav">
+            <button type="button" class="cal-btn" id="calToday">Oggi</button>
+            <button type="button" class="cal-btn cal-arrow" id="calPrev" aria-label="Settimana precedente">‹</button>
+            <button type="button" class="cal-btn cal-arrow" id="calNext" aria-label="Settimana successiva">›</button>
+            <h3 class="cal-title" id="calTitle" aria-live="polite"></h3>
+          </div>
+        </div>
+        <div class="cal-days" id="calDays" role="group" aria-label="Giorni della settimana"></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-pick" id="calPick" aria-live="polite"></div>
+        <p class="cal-note">Calendario dimostrativo: gli orari mostrati sono di esempio. La richiesta viene confermata dallo studio.</p>
+      </div>
+    </div>
+
+    <div class="wrap narrow">
       <form class="booking reveal" id="booking" novalidate>
         <div class="field">
           <label for="f-name">Il tuo nome</label>
@@ -407,8 +432,8 @@
           </select>
         </div>
         <div class="field">
-          <label for="f-when">Quando preferisci essere ricontattato <span class="opt">(facoltativo)</span></label>
-          <input id="f-when" name="when" type="text" placeholder="Es. mattina, dopo le 18…">
+          <label for="f-when">Giorno e orario scelto <span class="opt">(facoltativo)</span></label>
+          <input id="f-when" name="when" type="text" placeholder="Scegli dal calendario o scrivi qui">
         </div>
         <div class="field">
           <label for="f-tel">Il tuo numero <span class="opt">(facoltativo)</span></label>
@@ -490,5 +515,6 @@
 
 <script src="scene.js"></script>
 <script src="script.js"></script>
+<script src="calendar.js"></script>
 </body>
 </html>

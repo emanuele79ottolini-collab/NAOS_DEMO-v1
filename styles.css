@@ -157,6 +157,51 @@ em{font-style:italic}
 .list:not([hidden]){animation:fadeUp .5s var(--ease)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
+/* Calendario di prenotazione (stile calendario settimanale) */
+.cal{--c:#0b6e6a;--c-soft:#e6f2f1;--c-ink:#064643;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(14px,3vw,24px);margin-bottom:28px;box-shadow:0 24px 60px -40px rgba(0,0,0,.25)}
+.cal[data-prof="v"]{--c:#3a5bd0;--c-soft:#e8edfc;--c-ink:#1f3489}
+.cal-top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-who{border:0;padding:0;margin:0;display:flex;gap:8px;flex-wrap:wrap}
+.who{position:relative;display:inline-flex;align-items:center;gap:9px;min-height:44px;padding:0 18px 0 14px;border-radius:999px;border:1.5px solid var(--line);font-weight:560;font-size:.95rem;cursor:pointer;transition:background-color .2s,border-color .2s}
+.who input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.who .dot{width:12px;height:12px;border-radius:50%;background:var(--d)}
+.who-m{--d:#0b6e6a}.who-v{--d:#3a5bd0}
+.who:has(input:checked){background:var(--tint);border-color:var(--d)}
+.who:has(input:focus-visible){outline:3px solid #0a84ff;outline-offset:2px}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-title{order:-1;font-size:1.05rem;letter-spacing:-.01em;font-weight:600;margin-right:8px;white-space:nowrap}
+.cal-btn{font:inherit;font-size:.9rem;font-weight:560;min-height:40px;min-width:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;transition:background-color .2s}
+.cal-btn:hover:not(:disabled){background:var(--tint)}
+.cal-btn:disabled{opacity:.35;cursor:default}
+.cal-arrow{padding:0;font-size:1.3rem;line-height:1}
+.cal-days{display:none}
+.cal-grid{display:grid;grid-template-columns:56px repeat(6,minmax(0,1fr));border-top:1px solid var(--line)}
+.cal-grid .tl{font-size:.75rem;color:var(--ink-2);padding:6px 8px 0 0;text-align:right;border-bottom:1px solid transparent;min-height:50px}
+.cal-grid .tl.hd{min-height:0}
+.cal-grid .c{border-left:1px solid var(--line);border-bottom:1px solid var(--line);padding:3px;min-height:50px;position:relative}
+.cal-grid .c.hd{min-height:0;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;border-bottom:1px solid var(--line)}
+.cal-grid .hd .wd{font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.cal-grid .hd .dn{font-size:1.25rem;font-weight:500;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;margin-top:2px}
+.cal-grid .hd.today .dn{background:var(--c);color:#fff}
+.cal-grid .closed{background:repeating-linear-gradient(135deg,#f7f7f9 0 6px,#fff 6px 12px)}
+.cal-grid .closed .cl{display:none}
+.slot,.ev{width:100%;height:100%;min-height:44px;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 9px;font:inherit;text-align:left}
+.slot .t,.ev .t{font-size:.78rem;font-weight:600;line-height:1.1}
+.slot .s,.ev .s{font-size:.72rem;line-height:1.2}
+.ev{background:var(--c-soft);border-left:3px solid var(--c);color:var(--c-ink)}
+.slot{border:1.5px dashed #cfcfd6;background:#fff;color:var(--ink-2);cursor:pointer;transition:background-color .2s,border-color .2s,color .2s,transform .2s}
+.slot:hover{border:1.5px solid var(--c);background:var(--c-soft);color:var(--c-ink)}
+.slot:active{transform:scale(.97)}
+.slot.sel{background:var(--c);border:1.5px solid var(--c);color:#fff}
+.cal-pick{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--tint);min-height:68px}
+.pick-empty{margin:0;color:var(--ink-2)}
+.pick-txt{display:flex;align-items:center;gap:14px}
+.pick-txt b{display:block;font-size:1.02rem}
+.pick-txt span:not(.pick-dot){display:block;font-size:.88rem;color:var(--ink-2)}
+.pick-dot{width:14px;height:14px;border-radius:50%;flex:none}
+.pick-dot.m{background:#0b6e6a}.pick-dot.v{background:#3a5bd0}
+.cal-note{margin:12px 2px 0;font-size:.82rem;color:var(--ink-2)}
+
 /* Modulo */
 .booking{background:var(--tint);border-radius:var(--radius);padding:clamp(24px,5vw,44px);text-align:left;display:grid;gap:18px}
 .field label{display:block;font-weight:560;font-size:.95rem;margin-bottom:8px}
@@ -217,6 +262,32 @@ em{font-style:italic}
 .js .cards .reveal:nth-child(3),.js .contact-grid .reveal:nth-child(3){transition-delay:.2s}
 
 /* Tablet e mobile */
+@media (max-width:760px){
+  /* calendario: un solo giorno per volta, scelto dalla riga dei giorni */
+  .cal-days{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
+  .chip{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px;padding:8px 0;border-radius:14px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .chip span{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+  .chip b{font-size:1.1rem;font-weight:600}
+  .chip.on{background:var(--c);border-color:var(--c);color:#fff}
+  .chip.on span{color:rgba(255,255,255,.85)}
+  .chip:disabled{opacity:.35;cursor:default}
+  .cal-grid{grid-template-columns:52px minmax(0,1fr)}
+  .cal-grid .hd{display:none!important}
+  .cal-grid .c:not(.onday){display:none}
+  .cal-grid .tl{min-height:48px;padding-top:14px}
+  .cal-grid .c{border-left:0;padding:3px 0 3px 4px}
+  .slot,.ev{flex-direction:row;align-items:center;justify-content:space-between;padding:0 14px;min-height:44px}
+  .slot .t,.ev .t{font-size:.9rem}
+  .slot .s,.ev .s{font-size:.82rem}
+  .cal-grid .closed .cl{display:flex;align-items:center;height:100%;padding-left:12px;font-size:.82rem;color:var(--ink-2)}
+  .cal-nav{width:100%;flex-wrap:wrap}
+  .cal-title{width:100%;order:-1;margin:0 0 6px}
+  .cal-pick{flex-direction:column;align-items:stretch}
+  .cal-pick .btn{width:100%}
+}
+@media (min-width:761px){
+  .chip{display:none}
+}
 @media (max-width:900px){
   .cards,.contact-grid{grid-template-columns:1fr}
   .people{grid-template-columns:1fr}
