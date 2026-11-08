@@ -66,8 +66,173 @@
 
 <main id="contenuto">
 
+  <!-- INTRO ANIMATA: il tempio Naòs -->
+  <section class="scene" id="scena" aria-label="Introduzione animata">
+    <div class="scene-stage" id="stage">
+      <svg id="art" class="art" viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="art-t">
+        <title id="art-t">Illustrazione animata: un uccello vola nella nebbia e si posa sul frontone di un tempio greco; la scritta NAÒS sale da dietro il tetto e la luce della stanza interna del tempio, il naòs, riempie lo schermo.</title>
+        <defs>
+          <radialGradient id="gSun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fff6dc" stop-opacity="1"/>
+            <stop offset=".45" stop-color="#fff1d0" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#fff1d0" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gMist" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+            <stop offset=".6" stop-color="#fff" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="gCol" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#fffefb"/>
+            <stop offset=".55" stop-color="#f2ede3"/>
+            <stop offset="1" stop-color="#ddd6c7"/>
+          </linearGradient>
+          <linearGradient id="gWord" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#0b6e6a"/>
+            <stop offset="1" stop-color="#4fa9a3"/>
+          </linearGradient>
+          <linearGradient id="gGround" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#f6f2e9"/>
+            <stop offset="1" stop-color="#ece6d8"/>
+          </linearGradient>
+          <linearGradient id="gDoor" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#fffbe9"/>
+            <stop offset="1" stop-color="#ffe3a9"/>
+          </linearGradient>
+          <linearGradient id="gSpill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffe9b8" stop-opacity=".9"/>
+            <stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="gGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+            <stop offset=".8" stop-color="#fff" stop-opacity="1"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+          <clipPath id="clipWm"><rect x="-3000" y="-2000" width="7000" height="2314"/></clipPath>
+
+          <!-- colonna dorica -->
+          <g id="col">
+            <path d="M-17 632 L-14.500 394 L14.500 394 L17 632Z" fill="url(#gCol)" stroke="#c9c1b1" stroke-width="1.200"/>
+            <path d="M-8 630 L-7 396 M0 630 L0 396 M8 630 L7 396" stroke="#d6cfc0" stroke-width=".9" fill="none"/>
+            <path d="M-21 386 L21 386 L15 394 L-15 394Z" fill="#fbf9f4" stroke="#c9c1b1" stroke-width="1.200"/>
+            <rect x="-27" y="378" width="54" height="8" fill="#fffefb" stroke="#c9c1b1" stroke-width="1.200"/>
+          </g>
+        </defs>
+
+        <!-- MONDO (si ingrandisce quando la camera entra nel naòs) -->
+        <g id="world">
+          <circle id="sun" cx="500" cy="420" r="260" fill="url(#gSun)"/>
+
+          <!-- colline lontane -->
+          <g id="hills">
+            <path d="M-1500 560 C-1000 480 -600 520 -200 500 C100 480 300 470 500 500 C800 530 1100 470 1500 500 C1900 520 2300 480 2500 540 L2500 720 L-1500 720Z" fill="#dce9e6"/>
+            <path d="M-1500 610 C-1100 560 -700 590 -300 575 C0 560 250 560 500 585 C800 610 1100 560 1500 580 C1900 600 2200 570 2500 600 L2500 720 L-1500 720Z" fill="#cadcd7"/>
+            <g fill="#b6cbc5">
+              <path transform="translate(150 650) scale(.9)" d="M0 0 C-22 -60 -20 -170 0 -260 C20 -170 22 -60 0 0Z"/>
+              <path transform="translate(850 650) scale(1)" d="M0 0 C-22 -60 -20 -170 0 -260 C20 -170 22 -60 0 0Z"/>
+              <path transform="translate(190 650) scale(.6)" d="M0 0 C-22 -60 -20 -170 0 -260 C20 -170 22 -60 0 0Z"/>
+              <path transform="translate(-60 650) scale(1.1)" d="M0 0 C-22 -60 -20 -170 0 -260 C20 -170 22 -60 0 0Z"/>
+              <path transform="translate(1060 650) scale(1.15)" d="M0 0 C-22 -60 -20 -170 0 -260 C20 -170 22 -60 0 0Z"/>
+            </g>
+          </g>
+
+          <!-- scritta NAÒS che sale da dietro il tetto -->
+          <g clip-path="url(#clipWm)">
+            <g id="wm" class="wm" text-anchor="middle" fill="url(#gWord)" transform="translate(500 288) scale(.88) translate(-500 -288)">
+              <g class="wl"><text x="178" y="288">N</text></g>
+              <g class="wl"><text x="388" y="288">A</text></g>
+              <g class="wl"><text x="606" y="288">Ò</text></g>
+              <g class="wl"><text x="812" y="288">S</text></g>
+            </g>
+          </g>
+
+          <!-- nebbia dietro il tempio -->
+          <g id="mistBack">
+            <g class="drift">
+              <ellipse cx="80" cy="610" rx="420" ry="70" fill="url(#gMist)"/>
+              <ellipse cx="520" cy="590" rx="380" ry="60" fill="url(#gMist)"/>
+              <ellipse cx="930" cy="615" rx="440" ry="72" fill="url(#gMist)"/>
+              <ellipse cx="-380" cy="600" rx="420" ry="66" fill="url(#gMist)"/>
+              <ellipse cx="1380" cy="600" rx="420" ry="66" fill="url(#gMist)"/>
+            </g>
+          </g>
+
+          <!-- terreno -->
+          <path d="M-1500 700 L2500 700 L2500 1400 L-1500 1400Z" fill="url(#gGround)"/>
+          <path d="M-1500 700 L2500 700" stroke="#d9d2c3" stroke-width="1.500"/>
+
+          <!-- TEMPIO -->
+          <g id="temple">
+            <!-- gradini -->
+            <rect x="130" y="676" width="740" height="24" fill="#f8f5ee" stroke="#cdc5b5" stroke-width="1.200"/>
+            <rect x="150" y="654" width="700" height="22" fill="#fbf9f3" stroke="#cdc5b5" stroke-width="1.200"/>
+            <rect x="170" y="632" width="660" height="22" fill="#fffefb" stroke="#cdc5b5" stroke-width="1.200"/>
+            <!-- parete della cella -->
+            <rect x="225" y="394" width="550" height="238" fill="#e7e1d4"/>
+            <rect x="225" y="394" width="550" height="14" fill="#d9d2c3"/>
+            <!-- porta del naòs -->
+            <rect x="466" y="466" width="68" height="166" fill="#cfc7b6"/>
+            <rect id="door" x="472" y="472" width="56" height="160" fill="url(#gDoor)"/>
+            <rect x="462" y="458" width="76" height="8" fill="#f6f2e8" stroke="#c9c1b1" stroke-width="1.200"/>
+            <path id="spill" d="M472 632 L528 632 L600 700 L400 700Z" fill="url(#gSpill)" opacity=".3"/>
+            <!-- colonne -->
+            <use href="#col" x="220"/>
+            <use href="#col" x="332"/>
+            <use href="#col" x="444"/>
+            <use href="#col" x="556"/>
+            <use href="#col" x="668"/>
+            <use href="#col" x="780"/>
+            <!-- trabeazione -->
+            <rect x="180" y="352" width="640" height="26" fill="#fffefb" stroke="#c9c1b1" stroke-width="1.200"/>
+            <rect x="180" y="328" width="640" height="24" fill="#f7f3ea" stroke="#c9c1b1" stroke-width="1.200"/>
+            <g stroke="#cfc7b6" stroke-width="2.200">
+              <path d="M205 332V348 M212 332V348 M219 332V348 M317 332V348 M324 332V348 M331 332V348 M429 332V348 M436 332V348 M443 332V348 M541 332V348 M548 332V348 M555 332V348 M653 332V348 M660 332V348 M667 332V348 M765 332V348 M772 332V348 M779 332V348"/>
+            </g>
+            <rect x="170" y="314" width="660" height="14" fill="#fffefb" stroke="#c9c1b1" stroke-width="1.200"/>
+            <!-- frontone -->
+            <path d="M165 314 L500 210 L835 314Z" fill="#fffefb" stroke="#c9c1b1" stroke-width="1.400" stroke-linejoin="round"/>
+            <path d="M205 307 L500 224 L795 307Z" fill="#f1ece1" stroke="#d6cfc0" stroke-width="1"/>
+            <!-- il centro: simbolo del brand nel timpano -->
+            <circle cx="500" cy="274" r="17" fill="none" stroke="#0b6e6a" stroke-width="2.600"/>
+            <circle cx="500" cy="274" r="5.500" fill="#0b6e6a"/>
+          </g>
+
+          <!-- uccello: vola e si posa sul frontone -->
+          <g id="bird" transform="translate(500 210) scale(1.8)">
+            <g class="bird-in">
+              <g class="wing wing-back"><path d="M2 -18 C-8 -50 22 -62 40 -50 C24 -44 14 -32 10 -18Z" fill="#e6eeec" stroke="#1d1d1f" stroke-width="1.100" stroke-linejoin="round"/></g>
+              <path d="M-6 -5 L-6 0 M4 -5 L4 0" stroke="#1d1d1f" stroke-width="1.100" stroke-linecap="round"/>
+              <path d="M-26 -14 C-22 -24 -4 -28 10 -22 C14 -30 24 -32 28 -26 L40 -23 L29 -21 C27 -12 12 -4 -4 -5 C-14 -5 -22 -8 -38 -2 C-32 -8 -30 -12 -26 -14Z" fill="#fff" stroke="#1d1d1f" stroke-width="1.200" stroke-linejoin="round"/>
+              <circle cx="24" cy="-26" r="1.400" fill="#1d1d1f"/>
+              <g class="wing wing-front"><path d="M2 -18 C-8 -50 22 -62 40 -50 C24 -44 14 -32 10 -18Z" fill="#fff" stroke="#1d1d1f" stroke-width="1.200" stroke-linejoin="round"/></g>
+            </g>
+          </g>
+        </g>
+
+        <!-- nebbia davanti, luce e dissolvenza finale (non scalano con la camera) -->
+        <g id="mistFront">
+          <g class="drift slow">
+            <ellipse cx="60" cy="700" rx="520" ry="90" fill="url(#gMist)"/>
+            <ellipse cx="560" cy="720" rx="560" ry="100" fill="url(#gMist)"/>
+            <ellipse cx="1060" cy="700" rx="520" ry="90" fill="url(#gMist)"/>
+            <ellipse cx="-460" cy="710" rx="520" ry="90" fill="url(#gMist)"/>
+            <ellipse cx="1560" cy="710" rx="520" ry="90" fill="url(#gMist)"/>
+          </g>
+        </g>
+        <circle id="glow" cx="500" cy="552" r="0" fill="url(#gGlow)"/>
+      </svg>
+
+      <p class="scene-hint" id="sceneHint">Scorri <span aria-hidden="true"></span></p>
+      <div class="scene-caption" id="sceneCap" aria-hidden="true">
+        <p class="eyebrow">Naòs · ναός</p>
+        <p class="cap-title">La stanza più interna del tempio.</p>
+      </div>
+      <a class="scene-skip" href="#hero">Salta l’introduzione</a>
+    </div>
+  </section>
+
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="wrap hero-text reveal">
       <p class="eyebrow">Psicologia · Psicoterapia · Ipnosi</p>
       <h1>Ritrova<br>il tuo centro.</h1>
@@ -323,6 +488,7 @@
   </label>
 </div>
 
+<script src="scene.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

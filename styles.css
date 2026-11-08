@@ -75,6 +75,36 @@ em{font-style:italic}
 .big{font-size:clamp(1.2rem,2.6vw,1.55rem);line-height:1.5;color:var(--ink-2);margin-top:26px;letter-spacing:-.01em}
 .narrow{text-align:center}
 
+/* Intro animata: il tempio Naòs */
+.scene{position:relative}
+.scene-stage{position:relative;height:min(78svh,720px);overflow:hidden;
+  background:linear-gradient(180deg,#fff 0%,#eef5f4 52%,#fbf4e8 100%)}
+.has-scene .scene{height:380vh;height:380svh}
+.has-scene .scene-stage{position:sticky;top:var(--header-h);height:calc(100vh - var(--header-h));height:calc(100svh - var(--header-h))}
+.art{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+.wm text{font-family:var(--font);font-weight:700;font-size:300px;letter-spacing:-.02em}
+.drift{animation:mist 26s ease-in-out infinite alternate}
+.drift.slow{animation-duration:34s;animation-direction:alternate-reverse}
+@keyframes mist{from{transform:translateX(-40px)}to{transform:translateX(40px)}}
+#sun{animation:breathe 9s ease-in-out infinite alternate}
+@keyframes breathe{from{filter:none}to{filter:brightness(1.04)}}
+.wing{transform-box:fill-box;transform-origin:0% 100%;animation:flap .5s ease-in-out infinite alternate}
+.wing-back{animation-delay:-.12s}
+@keyframes flap{from{transform:rotate(-22deg)}to{transform:rotate(58deg)}}
+#bird.landed .wing{animation:none;transform:rotate(-140deg) scale(.92);transition:transform .7s var(--ease)}
+.scene-hint{position:absolute;left:0;right:0;bottom:28px;text-align:center;margin:0;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);pointer-events:none}
+.scene-hint span{display:block;width:1.5px;height:34px;margin:10px auto 0;background:linear-gradient(var(--ink-2),transparent);animation:hint 2.2s ease-in-out infinite}
+@keyframes hint{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.scene-caption{position:absolute;left:0;right:0;top:50%;margin-top:-70px;text-align:center;padding:0 24px;opacity:0;pointer-events:none}
+.scene-caption .cap-title{margin:0;font-size:clamp(2rem,6.4vw,4rem);font-weight:650;letter-spacing:-.035em;line-height:1.06;color:var(--ink)}
+.scene-skip{position:absolute;right:16px;top:14px;font-size:.82rem;font-weight:560;color:var(--ink);background:rgba(255,255,255,.82);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:8px 14px;border-radius:999px;text-decoration:none;box-shadow:0 0 0 1px rgba(0,0,0,.07)}
+.scene-skip:hover{background:#fff}
+.scene-static .scene{height:auto}
+.scene-static .scene-stage{position:relative;top:auto;height:min(78svh,720px)}
+.scene-static .scene-hint,.scene-static .scene-caption,.scene-static .scene-skip{display:none}
+@media (max-width:820px){.scene-hint{bottom:calc(96px + env(safe-area-inset-bottom))}}
+
 /* Hero */
 .hero{padding-top:clamp(40px,9vw,96px);text-align:center;overflow:hidden}
 .hero h1{font-size:clamp(2.9rem,10vw,6rem);letter-spacing:-.04em;line-height:1.02;margin-bottom:24px}
