@@ -79,7 +79,7 @@ em{font-style:italic}
 .scene{position:relative}
 .scene-stage{position:relative;height:min(78svh,720px);overflow:hidden;
   background:linear-gradient(180deg,#fff 0%,#eef5f4 52%,#fbf4e8 100%)}
-.has-scene .scene{height:380vh;height:380svh}
+.has-scene .scene{height:240vh;height:240svh}
 .has-scene .scene-stage{position:sticky;top:var(--header-h);height:calc(100vh - var(--header-h));height:calc(100svh - var(--header-h))}
 .art{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
 .wm text{font-family:var(--font);font-weight:700;font-size:300px;letter-spacing:-.02em}
