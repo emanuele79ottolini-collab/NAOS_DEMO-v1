@@ -110,9 +110,9 @@ em{font-style:italic}
 .person h3{font-size:1.4rem}
 .role{color:var(--accent);font-weight:560;font-size:.95rem;margin:6px 0 12px}
 .person p{color:var(--ink-2)}
-.person-links{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0 0!important}
-.person-links a{font-weight:560;text-decoration:none}
-.person-links a:hover{text-decoration:underline}
+.person-links{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 0!important}
+.wa-stack{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.contact-card .btn{font-weight:560;text-decoration:none}
 
 /* Percorsi */
 .tabs{display:flex;gap:4px;justify-content:center;background:#e8e8ed;border-radius:999px;padding:4px;width:fit-content;margin:0 auto 32px;max-width:100%}
