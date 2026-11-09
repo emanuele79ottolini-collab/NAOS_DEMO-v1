@@ -4,7 +4,12 @@
   var doc = document;
 
   /* Parte sempre dall'alto (dal video), salvo link diretti a una sezione */
-  function toTop() { if (!location.hash) window.scrollTo(0, 0); }
+  function toTop() {
+    if (!location.hash) { window.scrollTo(0, 0); return; }
+    var t = null;
+    try { t = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { t = null; }
+    if (t) window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - 60, behavior: 'instant' });
+  }
   window.addEventListener('load', function () { toTop(); setTimeout(toTop, 120); });
   window.addEventListener('pageshow', function (e) { if (e.persisted) toTop(); });
   var root = doc.documentElement;
@@ -132,6 +137,43 @@
   function set(state) { b.setAttribute('data-state', state); b.setAttribute('aria-label', LABELS[state]); }
 
   v.removeAttribute('controls');
+  // Audio del video: spento all'apertura, si accende solo su richiesta, con volume regolabile
+  var sBox = document.getElementById('filmSound'), sBtn = document.getElementById('soundBtn');
+  var sVol = document.getElementById('soundVol'), sLab = document.getElementById('soundLabel');
+  function volGet() { try { var x = window.localStorage.getItem('naos-film-vol'); return x === null ? null : +x; } catch (e) { return null; } }
+  function volSet(x) { try { window.localStorage.setItem('naos-film-vol', String(x)); } catch (e) { /* facoltativo */ } }
+  function soundUI() {
+    var on = !v.muted && v.volume > 0;
+    sBtn.setAttribute('aria-pressed', String(on));
+    sBtn.setAttribute('aria-label', on ? "Disattiva l'audio del video" : "Attiva l'audio del video");
+    sLab.textContent = on ? 'Audio acceso' : 'Audio spento';
+  }
+  if (sBox && sBtn && sVol) {
+    var saved = volGet();
+    if (saved !== null && !isNaN(saved) && saved > 0) sVol.value = String(Math.min(100, saved));
+    v.volume = (+sVol.value) / 100;
+    v.muted = true;
+    sBox.hidden = false;
+    soundUI();
+    sBtn.addEventListener('click', function () {
+      if (v.muted || v.volume === 0) {
+        if (+sVol.value === 0) sVol.value = '35';
+        v.volume = (+sVol.value) / 100;
+        v.muted = false;
+        if (v.ended) v.currentTime = 0;
+        if (v.paused) { var q = v.play(); if (q && q.catch) q.catch(function () {}); }
+      } else { v.muted = true; }
+      soundUI();
+    });
+    sVol.addEventListener('input', function () {
+      var x = +sVol.value;
+      volSet(x);
+      v.volume = x / 100;
+      v.muted = x === 0;
+      soundUI();
+    });
+    v.addEventListener('volumechange', soundUI);
+  }
   v.muted = true;
   b.hidden = false;
   set('paused');
