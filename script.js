@@ -2,6 +2,11 @@
 (function () {
   'use strict';
   var doc = document;
+
+  /* Parte sempre dall'alto (dal video), salvo link diretti a una sezione */
+  function toTop() { if (!location.hash) window.scrollTo(0, 0); }
+  window.addEventListener('load', function () { toTop(); setTimeout(toTop, 120); });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) toTop(); });
   var root = doc.documentElement;
   root.classList.add('js');
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
