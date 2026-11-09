@@ -81,29 +81,6 @@
     img.addEventListener('error', function () { img.style.visibility = 'hidden'; });
   });
 
-  /* ---------- Schede (tab) accessibili ---------- */
-  var tabs = Array.prototype.slice.call(doc.querySelectorAll('[role="tab"]'));
-  function selectTab(tab, focus) {
-    tabs.forEach(function (t) {
-      var on = t === tab;
-      t.setAttribute('aria-selected', String(on));
-      t.tabIndex = on ? 0 : -1;
-      doc.getElementById(t.getAttribute('aria-controls')).hidden = !on;
-    });
-    if (focus) tab.focus();
-  }
-  tabs.forEach(function (tab, i) {
-    tab.addEventListener('click', function () { selectTab(tab); });
-    tab.addEventListener('keydown', function (e) {
-      var n = null;
-      if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
-      else if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
-      else if (e.key === 'Home') n = tabs[0];
-      else if (e.key === 'End') n = tabs[tabs.length - 1];
-      if (n) { e.preventDefault(); selectTab(n, true); }
-    });
-  });
-
   /* ---------- Modulo appuntamento: link WhatsApp / email ---------- */
   var fName = doc.getElementById('f-name');
   var fWho = doc.getElementById('f-who');
@@ -172,4 +149,102 @@
     var p = v.play();
     if (p && p.catch) p.catch(function () { set('paused'); });
   }
+})();
+
+/* Percorsi: galleria orizzontale con filtri, frecce, trascinamento e schede che si ingrandiscono al centro */
+(function () {
+  'use strict';
+  var track = document.getElementById('track');
+  if (!track) return;
+  var cards = Array.prototype.slice.call(track.querySelectorAll('.pcard'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip-f'));
+  var prev = document.getElementById('trackPrev');
+  var next = document.getElementById('trackNext');
+  var bar = document.getElementById('trackBar');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function visible() { return cards.filter(function (c) { return !c.hidden; }); }
+
+  // Filtri con ingresso a cascata
+  function applyFilter(f) {
+    var n = 0;
+    cards.forEach(function (c) {
+      var show = f === 'all' || c.getAttribute('data-cat') === f;
+      c.hidden = !show;
+      if (show) { c.style.setProperty('--d', Math.min(n, 8)); n++; }
+    });
+    track.classList.remove('in'); void track.offsetWidth; track.classList.add('in');
+    track.scrollTo({ left: 0, behavior: 'auto' });
+    update();
+  }
+  chips.forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', String(x === ch)); });
+      applyFilter(ch.getAttribute('data-filter'));
+    });
+  });
+
+  // Frecce
+  function step(dir) {
+    track.scrollBy({ left: dir * Math.max(280, track.clientWidth * 0.7), behavior: reduce ? 'auto' : 'smooth' });
+  }
+  prev.addEventListener('click', function () { step(-1); });
+  next.addEventListener('click', function () { step(1); });
+
+  // Trascinamento con il mouse
+  var down = false, startX = 0, startL = 0, moved = 0;
+  track.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    down = true; moved = 0; startX = e.clientX; startL = track.scrollLeft;
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!down) return;
+    var dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx));
+    if (moved > 5) { track.classList.add('dragging'); track.scrollLeft = startL - dx; }
+  });
+  window.addEventListener('pointerup', function () {
+    if (!down) return;
+    down = false;
+    if (moved > 5) {
+      // riallinea alla scheda più vicina
+      var left = track.scrollLeft, best = null, bd = 1e9;
+      visible().forEach(function (c) { var d = Math.abs(c.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft) - left); if (d < bd) { bd = d; best = c; } });
+      track.classList.remove('dragging');
+      if (best) track.scrollTo({ left: best.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft), behavior: reduce ? 'auto' : 'smooth' });
+    }
+  });
+  track.addEventListener('click', function (e) { if (moved > 5) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
+
+  // Luce che segue il puntatore sulla scheda
+  track.addEventListener('pointermove', function (e) {
+    var art = e.target.closest && e.target.closest('.pcard article');
+    if (!art) return;
+    var r = art.getBoundingClientRect();
+    art.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    art.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+
+  // Avanzamento e scheda al centro leggermente più grande
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var max = track.scrollWidth - track.clientWidth;
+    var ratio = track.clientWidth / track.scrollWidth;
+    bar.style.width = Math.max(12, ratio * 100) + '%';
+    bar.style.transform = 'translateX(' + (max > 0 ? (track.scrollLeft / max) * ((1 / ratio) - 1) * 100 : 0) + '%)';
+    prev.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft >= max - 4;
+    if (reduce) return;
+    var mid = track.scrollLeft + track.clientWidth / 2;
+    visible().forEach(function (c) {
+      var cx = c.offsetLeft + c.offsetWidth / 2;
+      var d = Math.min(1, Math.abs(cx - mid) / (track.clientWidth * 0.6));
+      c.firstElementChild.style.setProperty('--s', (1 - d * 0.06).toFixed(3));
+      c.style.opacity = (1 - d * 0.28).toFixed(3);
+    });
+  }
+  track.addEventListener('scroll', function () { if (!ticking) { ticking = true; window.requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+  setTimeout(update, 400);
 })();

@@ -202,41 +202,170 @@
       <div class="section-head reveal">
         <p class="eyebrow">Percorsi</p>
         <h2>Per crescere insieme ad altri.</h2>
-        <p class="sub">Conferenze, gruppi e corsi aperti a chi desidera iniziare un cammino personale. Scrivici per sapere le prossime date.</p>
+        <p class="sub">Conferenze, gruppi e corsi aperti a chi desidera iniziare un cammino personale. Scorri le proposte o filtrale per tipo.</p>
       </div>
+      <div class="p-controls reveal">
+        <div class="chips" role="group" aria-label="Filtra i percorsi">
+          <button type="button" class="chip-f" data-filter="all" aria-pressed="true">Tutti <span>18</span></button>
+          <button type="button" class="chip-f" data-filter="conf" aria-pressed="false">Conferenze <span>8</span></button>
+          <button type="button" class="chip-f" data-filter="grup" aria-pressed="false">Gruppi <span>4</span></button>
+          <button type="button" class="chip-f" data-filter="cors" aria-pressed="false">Corsi <span>6</span></button>
+        </div>
+        <div class="p-arrows">
+          <button type="button" class="cal-btn cal-arrow" id="trackPrev" aria-label="Percorsi precedenti">‹</button>
+          <button type="button" class="cal-btn cal-arrow" id="trackNext" aria-label="Percorsi successivi">›</button>
+        </div>
+      </div>
+    </div>
 
-      <div class="tabs reveal" role="tablist" aria-label="Tipologie di percorso">
-        <button role="tab" id="t-conf" aria-controls="p-conf" aria-selected="true">Conferenze</button>
-        <button role="tab" id="t-grup" aria-controls="p-grup" aria-selected="false" tabindex="-1">Gruppi</button>
-        <button role="tab" id="t-cors" aria-controls="p-cors" aria-selected="false" tabindex="-1">Corsi</button>
-      </div>
-
-      <div class="panels">
-        <ul class="list" role="tabpanel" id="p-conf" aria-labelledby="t-conf">
-          <li><strong>Non vivo più senza te</strong><span>Riconoscere la dipendenza affettiva e imparare a volersi bene.</span></li>
-          <li><strong>Le carezze che nutrono</strong><span>Il bisogno di riconoscimento e la motivazione nelle relazioni.</span></li>
-          <li><strong>I sogni: immagini dell’anima</strong><span>Una serata per esplorare il significato dei sogni.</span></li>
-          <li><strong>Relazioni, identità, sessualità</strong><span>Un’introduzione al mondo LGBTQ+ con la Dott.ssa Giorgia Fasoli.</span></li>
-          <li><strong>Ho una storia da raccontarti</strong><span>La presentazione di un libro della Dott.ssa Mazzi.</span></li>
-          <li><strong>Tu puoi essere felice</strong><span>Affrontare i periodi difficili, parte del ciclo della vita.</span></li>
-          <li><strong>L’arte di parlare e di farsi ascoltare</strong><span>Il coraggio di esprimersi e quello di ascoltare.</span></li>
-          <li><strong>Meravigliati di te stesso</strong><span>Amarsi e accettarsi, scegliendo con libertà ciò che è meglio per sé.</span></li>
-        </ul>
-        <ul class="list" role="tabpanel" id="p-grup" aria-labelledby="t-grup" hidden>
-          <li><strong>Costellazioni sistemiche</strong><span>Un metodo psicoterapeutico ispirato alle dinamiche dei sistemi familiari.</span></li>
-          <li><strong>La sabbiera di gruppo</strong><span>Lavoro sui simboli creati nella sabbia per esplorare l’inconscio.</span></li>
-          <li><strong>Donne al centro</strong><span>Un percorso riservato alle donne, ispirato alle figure femminili delle antiche civiltà.</span></li>
-          <li><strong>La scatola delle meraviglie</strong><span>Gruppo esperienziale di crescita personale con metodi artistici e creativi.</span></li>
-        </ul>
-        <ul class="list" role="tabpanel" id="p-cors" aria-labelledby="t-cors" hidden>
-          <li><strong>Meravigliati! (online)</strong><span>Riconoscere e attivare il proprio potere trasformativo.</span></li>
-          <li><strong>Autoipnosi per l’Anima (online)</strong><span>Tecniche di autoipnosi per gestire ansia, stress e disturbi psicosomatici.</span></li>
-          <li><strong>L’arte del rilassamento</strong><span>Primo e secondo livello: autoipnosi per ansia e stress.</span></li>
-          <li><strong>Gruppo di auto-aiuto sulle dipendenze</strong><span>Per chi vive una dipendenza da sostanze, legali o illegali.</span></li>
-          <li><strong>Dimagrire con l’autoipnosi</strong><span>Cinque incontri su tecniche di autoipnosi per metabolismo e peso.</span></li>
-          <li><strong>Crescere insieme</strong><span>Comprendere le dinamiche di coppia e migliorare la comunicazione.</span></li>
-        </ul>
-      </div>
+    <ul class="track reveal" id="track" tabindex="0" aria-label="Elenco dei percorsi, scorri in orizzontale">
+          <li class="pcard" data-cat="conf" style="--i:0">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">01</span></div>
+              <h3>Non vivo più senza te</h3>
+              <p>Riconoscere la dipendenza affettiva e imparare a volersi bene.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABNon%20vivo%20pi%C3%B9%20senza%20te%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Non vivo più senza te su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:1">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">02</span></div>
+              <h3>Le carezze che nutrono</h3>
+              <p>Il bisogno di riconoscimento e la motivazione nelle relazioni.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABLe%20carezze%20che%20nutrono%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Le carezze che nutrono su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:2">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">03</span></div>
+              <h3>I sogni: immagini dell’anima</h3>
+              <p>Una serata per esplorare il significato dei sogni.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABI%20sogni%3A%20immagini%20dell%E2%80%99anima%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su I sogni: immagini dell’anima su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:3">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">04</span></div>
+              <h3>Relazioni, identità, sessualità</h3>
+              <p>Un’introduzione al mondo LGBTQ+ con la Dott.ssa Giorgia Fasoli.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABRelazioni%2C%20identit%C3%A0%2C%20sessualit%C3%A0%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Relazioni, identità, sessualità su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:4">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">05</span></div>
+              <h3>Ho una storia da raccontarti</h3>
+              <p>La presentazione di un libro della Dott.ssa Mazzi.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABHo%20una%20storia%20da%20raccontarti%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Ho una storia da raccontarti su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:5">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">06</span></div>
+              <h3>Tu puoi essere felice</h3>
+              <p>Affrontare i periodi difficili, parte del ciclo della vita.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABTu%20puoi%20essere%20felice%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Tu puoi essere felice su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:6">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">07</span></div>
+              <h3>L’arte di parlare e di farsi ascoltare</h3>
+              <p>Il coraggio di esprimersi e quello di ascoltare.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABL%E2%80%99arte%20di%20parlare%20e%20di%20farsi%20ascoltare%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su L’arte di parlare e di farsi ascoltare su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="conf" style="--i:7">
+            <article>
+              <div class="pc-top"><span class="tag tag-conf">Conferenza gratuita</span><span class="pc-num" aria-hidden="true">08</span></div>
+              <h3>Meravigliati di te stesso</h3>
+              <p>Amarsi e accettarsi, scegliendo con libertà ciò che è meglio per sé.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABMeravigliati%20di%20te%20stesso%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Meravigliati di te stesso su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="grup" style="--i:8">
+            <article>
+              <div class="pc-top"><span class="tag tag-grup">Gruppo terapeutico</span><span class="pc-num" aria-hidden="true">09</span></div>
+              <h3>Costellazioni sistemiche</h3>
+              <p>Un metodo psicoterapeutico ispirato alle dinamiche dei sistemi familiari.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABCostellazioni%20sistemiche%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Costellazioni sistemiche su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="grup" style="--i:9">
+            <article>
+              <div class="pc-top"><span class="tag tag-grup">Gruppo terapeutico</span><span class="pc-num" aria-hidden="true">10</span></div>
+              <h3>La sabbiera di gruppo</h3>
+              <p>Lavoro sui simboli creati nella sabbia per esplorare l’inconscio.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABLa%20sabbiera%20di%20gruppo%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su La sabbiera di gruppo su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="grup" style="--i:10">
+            <article>
+              <div class="pc-top"><span class="tag tag-grup">Gruppo terapeutico</span><span class="pc-num" aria-hidden="true">11</span></div>
+              <h3>Donne al centro</h3>
+              <p>Un percorso riservato alle donne, ispirato alle figure femminili delle antiche civiltà.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABDonne%20al%20centro%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Donne al centro su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="grup" style="--i:11">
+            <article>
+              <div class="pc-top"><span class="tag tag-grup">Gruppo terapeutico</span><span class="pc-num" aria-hidden="true">12</span></div>
+              <h3>La scatola delle meraviglie</h3>
+              <p>Gruppo esperienziale di crescita personale con metodi artistici e creativi.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABLa%20scatola%20delle%20meraviglie%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su La scatola delle meraviglie su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:12">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="tag tag-online">Online</span><span class="pc-num" aria-hidden="true">13</span></div>
+              <h3>Meravigliati!</h3>
+              <p>Riconoscere e attivare il proprio potere trasformativo.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABMeravigliati%21%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Meravigliati! su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:13">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="tag tag-online">Online</span><span class="pc-num" aria-hidden="true">14</span></div>
+              <h3>Autoipnosi per l’Anima</h3>
+              <p>Tecniche di autoipnosi per gestire ansia, stress e disturbi psicosomatici.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABAutoipnosi%20per%20l%E2%80%99Anima%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Autoipnosi per l’Anima su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:14">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="pc-num" aria-hidden="true">15</span></div>
+              <h3>L’arte del rilassamento</h3>
+              <p>Primo e secondo livello: autoipnosi per ansia e stress.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABL%E2%80%99arte%20del%20rilassamento%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su L’arte del rilassamento su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:15">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="pc-num" aria-hidden="true">16</span></div>
+              <h3>Gruppo di auto-aiuto sulle dipendenze</h3>
+              <p>Per chi vive una dipendenza da sostanze, legali o illegali.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABGruppo%20di%20auto-aiuto%20sulle%20dipendenze%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Gruppo di auto-aiuto sulle dipendenze su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:16">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="pc-num" aria-hidden="true">17</span></div>
+              <h3>Dimagrire con l’autoipnosi</h3>
+              <p>Cinque incontri su tecniche di autoipnosi per metabolismo e peso.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABDimagrire%20con%20l%E2%80%99autoipnosi%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Dimagrire con l’autoipnosi su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+          <li class="pcard" data-cat="cors" style="--i:17">
+            <article>
+              <div class="pc-top"><span class="tag tag-cors">Corso</span><span class="pc-num" aria-hidden="true">18</span></div>
+              <h3>Crescere insieme</h3>
+              <p>Comprendere le dinamiche di coppia e migliorare la comunicazione.</p>
+              <a class="pc-link" href="https://wa.me/393772609553?text=Buongiorno%2C%20vorrei%20informazioni%20su%20%C2%ABCrescere%20insieme%C2%BB." target="_blank" rel="noopener" aria-label="Chiedi informazioni su Crescere insieme su WhatsApp">Chiedi informazioni</a>
+            </article>
+          </li>
+    </ul>
+    <div class="wrap">
+      <div class="track-progress" aria-hidden="true"><span id="trackBar"></span></div>
 
       <figure class="wide-photo reveal" data-parallax>
         <img src="assets/corsi.jpg" alt="Immagine dedicata ai corsi e ai percorsi di gruppo" loading="lazy" width="1200" height="600">
