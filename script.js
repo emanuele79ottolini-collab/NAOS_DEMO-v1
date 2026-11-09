@@ -225,7 +225,7 @@
 
   var stage, drum, cards = [], slots = [], total = 0, theta = 20, R = 800, CW = 280, GAP = 16, K = 0.07;
   var ang = 0, vel = 0, tween = null, dragging = false, hovering = false, focused = false, userPaused = false, inView = true;
-  var SPEED = 0.0036;            // gradi al millisecondo (circa 3,6 gradi al secondo)
+  var SPEED = 0.0125;            // gradi al millisecondo (circa 12,5 gradi al secondo: una scheda ogni 1,6 secondi)
   var last = 0, raf = 0, moved = 0, lastScrollY = window.scrollY;
   var cur = [], pauseBtn;
 
@@ -287,7 +287,7 @@
   function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function turnTo(target) {
     if (reduce) { ang = target; vel = 0; render(); return; }
-    tween = { from: ang, to: target, t0: performance.now(), dur: 700 };
+    tween = { from: ang, to: target, t0: performance.now(), dur: 520 };
     vel = 0;
   }
   function centerNear() { return Math.round(-ang / theta); }
@@ -305,7 +305,7 @@
       ang = tween.from + (tween.to - tween.from) * ease(p);
       if (p >= 1) tween = null;
     } else if (!dragging) {
-      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.94, dt / 16); } else vel = 0;
+      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.955, dt / 16); } else vel = 0;
       if (!paused()) ang += SPEED * dt;
     }
     render();
@@ -325,8 +325,8 @@
       moved += Math.abs(dx);
       if (moved > 6) {
         if (!dragging) { dragging = true; stage.classList.add('dragging'); try { stage.setPointerCapture(e.pointerId); } catch (x) {} }
-        ang -= dx * K;
-        vel = -(dx * K) / Math.max(8, now - lt);
+        ang -= dx * K * 1.3;
+        vel = -(dx * K * 1.3) / Math.max(8, now - lt);
         lx = e.clientX; lt = now;
         render(); schedule();
       }
@@ -370,7 +370,7 @@
     // Trackpad e rotella orizzontale
     stage.addEventListener('wheel', function (e) {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        e.preventDefault(); tween = null; ang += e.deltaX * K; render(); schedule();
+        e.preventDefault(); tween = null; ang += e.deltaX * K * 1.6; render(); schedule();
       }
     }, { passive: false });
   }
@@ -379,7 +379,7 @@
   window.addEventListener('scroll', function () {
     var y = window.scrollY, d = y - lastScrollY; lastScrollY = y;
     if (!inView || reduce || tween || dragging) return;
-    ang += d * 0.045; render(); schedule();
+    ang += d * 0.12; render(); schedule();
   }, { passive: true });
 
   window.addEventListener('resize', function () { if (stage) { sizes(); render(true); } });
