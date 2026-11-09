@@ -127,8 +127,8 @@ em{font-style:italic}
 /* Professionisti */
 .people{display:grid;gap:20px;grid-template-columns:repeat(2,1fr)}
 .person{background:var(--tint);border-radius:var(--radius);padding:34px 30px;display:flex;gap:22px;align-items:flex-start}
-.person-photo{flex:none;width:124px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.person img{width:96px;height:96px;border-radius:50%;object-fit:cover;flex:none;background:#dfe7ee}
+.person-photo{flex:none;width:150px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.person img{width:140px;height:140px;border-radius:50%;object-fit:cover;flex:none;background:#dfe7ee}
 .site-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;min-height:44px;padding:0 6px;font-size:.85rem;font-weight:600;color:var(--accent);text-decoration:none;text-align:center;line-height:1.2}
 .site-link::after{content:"↗";font-size:.9em;transition:transform .3s var(--ease)}
 .site-link:hover{text-decoration:underline;text-underline-offset:4px}
@@ -346,6 +346,8 @@ em{font-style:italic}
 }
 @media (max-width:440px){
   .person{flex-direction:column}
+  .person-photo{width:auto;align-items:flex-start}
+  .person img{width:128px;height:128px}
   .tabs button{padding:10px 16px}
 }
 
