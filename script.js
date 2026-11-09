@@ -224,10 +224,9 @@
   if (!all.length) return;
 
   var stage, drum, cards = [], slots = [], total = 0, theta = 20, R = 800, CW = 280, GAP = 16, K = 0.07;
-  var ang = 0, vel = 0, tween = null, dragging = false, hovering = false, focused = false, userPaused = false, inView = true;
-  var SPEED = 0.0125;            // gradi al millisecondo (circa 12,5 gradi al secondo: una scheda ogni 1,6 secondi)
+  var ang = 0, vel = 0, tween = null, dragging = false, inView = true;
   var last = 0, raf = 0, moved = 0, lastScrollY = window.scrollY;
-  var cur = [], pauseBtn;
+  var cur = [];
 
   function pad(i) { return i < 10 ? '0' + i : '' + i; }
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
@@ -257,7 +256,7 @@
     var html = '<div class="drum-stage" id="drumStage" tabindex="0" role="group" aria-roledescription="carosello" aria-label="Percorsi: trascina o usa le frecce per scorrere">' +
       '<div class="drum" id="drum">';
     for (var k = 0; k < total; k++) html += cardHTML(list[k % n], k % n, k < n, n);
-    html += '</div></div><p class="drum-hint">Trascina, scorri o usa le frecce.<span class="hover-hint"> Passa sopra una scheda per fermare la rotazione.</span></p>';
+    html += '</div></div><p class="drum-hint">Trascina, scorri o usa le frecce per sfogliare i percorsi.</p>';
     wrap.innerHTML = html;
     stage = document.getElementById('drumStage');
     drum = document.getElementById('drum');
@@ -289,13 +288,13 @@
     if (reduce) { ang = target; vel = 0; render(); return; }
     tween = { from: ang, to: target, t0: performance.now(), dur: 520 };
     vel = 0;
+    last = 0;
+    schedule();
   }
   function centerNear() { return Math.round(-ang / theta); }
   function step(dir) { turnTo(Math.round(ang / theta) * theta + dir * theta); }
 
-  function paused() { return userPaused || hovering || focused || dragging || reduce; }
-
-  function loop(t) {
+    function loop(t) {
     raf = 0;
     if (!inView) { last = 0; return; }
     var dt = last ? Math.min(50, t - last) : 16;
@@ -305,11 +304,10 @@
       ang = tween.from + (tween.to - tween.from) * ease(p);
       if (p >= 1) tween = null;
     } else if (!dragging) {
-      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.955, dt / 16); } else vel = 0;
-      if (!paused()) ang += SPEED * dt;
+      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.93, dt / 16); } else vel = 0;
     }
     render();
-    schedule();
+    if (tween || dragging || Math.abs(vel) > 0.0004) schedule();
   }
   function schedule() { if (!raf && inView) raf = requestAnimationFrame(loop); }
 
@@ -327,6 +325,7 @@
         if (!dragging) { dragging = true; stage.classList.add('dragging'); try { stage.setPointerCapture(e.pointerId); } catch (x) {} }
         ang -= dx * K * 1.3;
         vel = -(dx * K * 1.3) / Math.max(8, now - lt);
+        vel = Math.max(-0.1, Math.min(0.1, vel));
         lx = e.clientX; lt = now;
         render(); schedule();
       }
@@ -351,17 +350,11 @@
     }, true);
     stage.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
-    // Mouse sopra la galleria: la rotazione si ferma
-    stage.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hovering = true; });
-    stage.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hovering = false; schedule(); } });
-
     // Focus da tastiera: la scheda raggiunta va al centro
     stage.addEventListener('focusin', function (e) {
-      focused = true;
       var c = e.target.closest('.dcard');
       if (c) { var i = cards.indexOf(c), eff = norm(-i * theta + ang); if (Math.abs(eff) > 1) turnTo(ang - eff); }
     });
-    stage.addEventListener('focusout', function () { focused = false; schedule(); });
     stage.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
@@ -391,18 +384,6 @@
   }
 
   // Comandi
-  pauseBtn = document.createElement('button');
-  pauseBtn.type = 'button'; pauseBtn.className = 'cal-btn cal-arrow'; pauseBtn.id = 'drumPause';
-  function setPauseUI() {
-    pauseBtn.setAttribute('aria-label', userPaused ? 'Riprendi la rotazione automatica' : 'Ferma la rotazione automatica');
-    pauseBtn.innerHTML = userPaused
-      ? '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 5.500v13a1 1 0 0 0 1.500.9l10.500-6.500a1 1 0 0 0 0-1.700L9.500 4.600A1 1 0 0 0 8 5.500Z"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.200" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.200" fill="currentColor"/></svg>';
-  }
-  pauseBtn.addEventListener('click', function () { userPaused = !userPaused; setPauseUI(); schedule(); });
-  setPauseUI();
-  if (!reduce) prev.parentNode.insertBefore(pauseBtn, prev);
-
   prev.addEventListener('click', function () { if (stage) step(-1); });
   next.addEventListener('click', function () { if (stage) step(1); });
   prev.disabled = false; next.disabled = false;
