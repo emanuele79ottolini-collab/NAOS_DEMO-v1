@@ -151,30 +151,18 @@
   }
 })();
 
-/* Percorsi: libro da sfogliare, una pagina alla volta con effetto di pagina che si gira */
+/* Percorsi: schede disposte all'interno di un tamburo che gira lentamente, con i bordi che si curvano verso chi guarda */
 (function () {
   'use strict';
   var track = document.getElementById('track');
-  var wrap = document.getElementById('bookWrap');
+  var wrap = document.getElementById('drumWrap');
   if (!track || !wrap) return;
 
   var chips = Array.prototype.slice.call(document.querySelectorAll('.chip-f'));
   var prev = document.getElementById('trackPrev');
   var next = document.getElementById('trackNext');
-  var bar = document.getElementById('trackBar');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var ICONS = {
-    conf: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10h32a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H22l-9 7v-7H8a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2Z"/><path d="M14 19h20M14 26h12"/></svg>',
-    grup: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="17" cy="17" r="6"/><circle cx="33" cy="20" r="5"/><path d="M5 38c0-7 5-12 12-12s12 5 12 12M30 27c6 0 11 4 12 11"/></svg>',
-    cors: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 12c-4-3-9-4-16-4v28c7 0 12 1 16 4 4-3 9-4 16-4V8c-7 0-12 1-16 4Z"/><path d="M24 12v28"/></svg>'
-  };
-  var CAPTION = {
-    conf: 'Serate aperte a tutti',
-    grup: 'Si lavora insieme, in piccolo gruppo',
-    cors: 'Percorsi strutturati, anche online'
-  };
-
-  // Dati letti dall'elenco già presente in pagina (resta come alternativa senza JavaScript)
   var all = Array.prototype.slice.call(track.querySelectorAll('.pcard')).map(function (li) {
     var a = li.querySelector('.pc-link');
     return {
@@ -188,124 +176,202 @@
   });
   if (!all.length) return;
 
-  var items = [], sheets = [], idx = 0, n = 0, book, live, count;
+  var stage, drum, cards = [], slots = [], total = 0, theta = 20, R = 800, CW = 280, GAP = 16, K = 0.07;
+  var ang = 0, vel = 0, tween = null, dragging = false, hovering = false, focused = false, userPaused = false, inView = true;
+  var SPEED = 0.0036;            // gradi al millisecondo (circa 3,6 gradi al secondo)
+  var last = 0, raf = 0, moved = 0, lastScrollY = window.scrollY;
+  var cur = [], pauseBtn;
 
   function pad(i) { return i < 10 ? '0' + i : '' + i; }
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function norm(a) { return ((a + 180) % 360 + 360) % 360 - 180; }
 
-  function decoPage(i) {
-    var it = items[i];
-    return '<div class="page left deco" data-cat="' + it.cat + '" aria-hidden="true">' +
-      '<div class="deco-ico">' + ICONS[it.cat] + '</div>' +
-      '<div class="deco-num">' + pad(i + 1) + '</div>' +
-      '<div class="deco-of">di ' + n + '</div>' +
-      '<p class="deco-cat">' + CAPTION[it.cat] + '</p></div>';
+  function sizes() {
+    var w = wrap.clientWidth;
+    CW = w < 520 ? 236 : 280;
+    var h = CW === 280 ? 350 : 340;
+    stage.style.setProperty('--cw', CW + 'px');
+    stage.style.setProperty('--ch', h + 'px');
+    R = (CW + GAP) / (2 * Math.sin((theta / 2) * Math.PI / 180));
+    K = theta / (CW + GAP);
+    cards.forEach(function (c, i) { c.style.transform = 'rotateY(' + (-i * theta) + 'deg) translateZ(' + (-R) + 'px)'; });
   }
 
-  function textPage(i) {
-    var it = items[i];
-    return '<div class="page right text" data-cat="' + it.cat + '">' +
+  function cardHTML(it, i, real, n) {
+    return '<div class="dcard" data-cat="' + it.cat + '"' + (real ? ' role="group" aria-roledescription="scheda" aria-label="Percorso ' + (i + 1) + ' di ' + n + '"' : ' aria-hidden="true"') + '>' +
       '<div class="pc-top">' + it.tags + '<span class="pc-num" aria-hidden="true">' + pad(i + 1) + '</span></div>' +
-      '<h3>' + esc(it.title) + '</h3>' +
-      '<p>' + esc(it.desc) + '</p>' +
-      '<a class="pc-link" href="' + esc(it.href) + '" target="_blank" rel="noopener" aria-label="' + esc(it.aria) + '">Chiedi informazioni</a></div>';
+      '<h3>' + esc(it.title) + '</h3><p>' + esc(it.desc) + '</p>' +
+      '<a class="pc-link" href="' + esc(it.href) + '" target="_blank" rel="noopener" aria-label="' + esc(it.aria) + '"' + (real ? '' : ' tabindex="-1"') + '>Chiedi informazioni</a></div>';
   }
 
   function build(list) {
-    items = list; n = list.length; idx = 0;
-    var html = '<div class="book" id="book" tabindex="0" role="group" aria-roledescription="libro da sfogliare" aria-label="Percorsi, usa le frecce per sfogliare">' +
-      '<div class="book-edge" aria-hidden="true"></div>' +
-      '<div class="leftbase">' + decoPage(0) + '</div>';
-    for (var i = 0; i < n; i++) {
-      html += '<div class="sheet" data-i="' + i + '"><div class="face front">' + textPage(i) + '</div>' +
-        '<div class="face back">' + (i + 1 < n ? decoPage(i + 1) : '') + '</div></div>';
-    }
-    html += '</div><div class="book-meta"><span class="book-count" id="bookCount"></span>' +
-      '<span class="book-hint">Sfoglia con le frecce o trascina la pagina</span></div>' +
-      '<p class="sr" id="bookLive" aria-live="polite"></p>';
+    var n = list.length, reps = n >= 12 ? 1 : Math.ceil(12 / n);
+    total = n * reps; theta = 360 / total;
+    var html = '<div class="drum-stage" id="drumStage" tabindex="0" role="group" aria-roledescription="carosello" aria-label="Percorsi: trascina o usa le frecce per scorrere">' +
+      '<div class="drum" id="drum">';
+    for (var k = 0; k < total; k++) html += cardHTML(list[k % n], k % n, k < n, n);
+    html += '</div></div><p class="drum-hint">Trascina, scorri o usa le frecce.<span class="hover-hint"> Passa sopra una scheda per fermare la rotazione.</span></p>';
     wrap.innerHTML = html;
-    book = document.getElementById('book');
-    count = document.getElementById('bookCount');
-    live = document.getElementById('bookLive');
-    sheets = Array.prototype.slice.call(book.querySelectorAll('.sheet'));
-    sheets.forEach(function (s, i) { s.style.zIndex = n - i; s.inert = i !== 0; });
-    if (sheets[0]) sheets[0].classList.add('current');
-    bindDrag();
-    render(false);
+    stage = document.getElementById('drumStage');
+    drum = document.getElementById('drum');
+    cards = Array.prototype.slice.call(drum.children);
+    cur = cards.map(function () { return null; });
+    ang = 0; vel = 0; tween = null;
+    sizes();
+    bind();
+    render(true);
   }
 
-  function render(announce) {
-    sheets.forEach(function (s, i) {
-      var flipped = i < idx;
-      var was = s.classList.contains('flipped');
-      if (flipped !== was) {
-        s.classList.add('turning');
-        (function (el) { setTimeout(function () { el.classList.remove('turning'); }, 950); })(s);
-        s.classList.toggle('flipped', flipped);
+  function render(force) {
+    drum.style.transform = 'translateZ(' + R + 'px) rotateY(' + ang.toFixed(3) + 'deg)';
+    for (var i = 0; i < total; i++) {
+      var e = norm(-i * theta + ang), a = Math.abs(e);
+      var vis = a <= 78;
+      var op = vis ? Math.max(0.35, 1 - a / 130) : 0;
+      var key = vis ? op.toFixed(2) : 'h';
+      if (force || cur[i] !== key) {
+        cur[i] = key;
+        cards[i].style.visibility = vis ? 'visible' : 'hidden';
+        cards[i].style.opacity = vis ? op.toFixed(2) : '0';
       }
-      s.style.zIndex = flipped ? n + i + 1 : n - i;
-      s.classList.toggle('current', i === idx);
-      s.inert = i !== idx;
+    }
+  }
+
+  function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function turnTo(target) {
+    if (reduce) { ang = target; vel = 0; render(); return; }
+    tween = { from: ang, to: target, t0: performance.now(), dur: 700 };
+    vel = 0;
+  }
+  function centerNear() { return Math.round(-ang / theta); }
+  function step(dir) { turnTo(Math.round(ang / theta) * theta + dir * theta); }
+
+  function paused() { return userPaused || hovering || focused || dragging || reduce; }
+
+  function loop(t) {
+    raf = 0;
+    if (!inView) { last = 0; return; }
+    var dt = last ? Math.min(50, t - last) : 16;
+    last = t;
+    if (tween) {
+      var p = Math.min(1, (t - tween.t0) / tween.dur);
+      ang = tween.from + (tween.to - tween.from) * ease(p);
+      if (p >= 1) tween = null;
+    } else if (!dragging) {
+      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.94, dt / 16); } else vel = 0;
+      if (!paused()) ang += SPEED * dt;
+    }
+    render();
+    schedule();
+  }
+  function schedule() { if (!raf && inView) raf = requestAnimationFrame(loop); }
+
+  function bind() {
+    var sx = 0, lx = 0, lt = 0, down = false;
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      down = true; moved = 0; sx = lx = e.clientX; lt = performance.now(); tween = null; vel = 0;
     });
-    count.textContent = pad(idx + 1) + ' / ' + pad(n);
-    prev.disabled = idx <= 0;
-    next.disabled = idx >= n - 1;
-    bar.style.width = ((idx + 1) / n * 100) + '%';
-    if (announce) live.textContent = 'Percorso ' + (idx + 1) + ' di ' + n + ': ' + items[idx].title;
+    stage.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - lx, now = performance.now();
+      moved += Math.abs(dx);
+      if (moved > 6) {
+        if (!dragging) { dragging = true; stage.classList.add('dragging'); try { stage.setPointerCapture(e.pointerId); } catch (x) {} }
+        ang -= dx * K;
+        vel = -(dx * K) / Math.max(8, now - lt);
+        lx = e.clientX; lt = now;
+        render(); schedule();
+      }
+    });
+    var up = function () {
+      if (!down) return;
+      down = false;
+      if (dragging) { dragging = false; stage.classList.remove('dragging'); }
+      schedule();
+    };
+    stage.addEventListener('pointerup', up);
+    stage.addEventListener('pointercancel', up);
+    stage.addEventListener('lostpointercapture', up);
+
+    // Clic su una scheda laterale: la porta al centro
+    stage.addEventListener('click', function (e) {
+      if (moved > 6) { e.preventDefault(); e.stopPropagation(); moved = 0; return; }
+      var c = e.target.closest('.dcard');
+      if (!c || e.target.closest('a')) return;
+      var i = cards.indexOf(c), eff = norm(-i * theta + ang);
+      if (Math.abs(eff) > theta / 2) turnTo(ang - eff);
+    }, true);
+    stage.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+    // Mouse sopra la galleria: la rotazione si ferma
+    stage.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hovering = true; });
+    stage.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hovering = false; schedule(); } });
+
+    // Focus da tastiera: la scheda raggiunta va al centro
+    stage.addEventListener('focusin', function (e) {
+      focused = true;
+      var c = e.target.closest('.dcard');
+      if (c) { var i = cards.indexOf(c), eff = norm(-i * theta + ang); if (Math.abs(eff) > 1) turnTo(ang - eff); }
+    });
+    stage.addEventListener('focusout', function () { focused = false; schedule(); });
+    stage.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    });
+
+    // Trackpad e rotella orizzontale
+    stage.addEventListener('wheel', function (e) {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault(); tween = null; ang += e.deltaX * K; render(); schedule();
+      }
+    }, { passive: false });
   }
 
-  function go(k, announce) {
-    k = Math.max(0, Math.min(n - 1, k));
-    if (k === idx) return;
-    idx = k;
-    render(announce !== false);
+  // Scorrendo la pagina il tamburo ruota un poco
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY, d = y - lastScrollY; lastScrollY = y;
+    if (!inView || reduce || tween || dragging) return;
+    ang += d * 0.045; render(); schedule();
+  }, { passive: true });
+
+  window.addEventListener('resize', function () { if (stage) { sizes(); render(true); } });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (en) {
+      inView = en[0].isIntersecting; if (inView) { last = 0; schedule(); }
+    }, { rootMargin: '80px' }).observe(wrap);
   }
 
-  prev.addEventListener('click', function () { go(idx - 1); });
-  next.addEventListener('click', function () { go(idx + 1); });
+  // Comandi
+  pauseBtn = document.createElement('button');
+  pauseBtn.type = 'button'; pauseBtn.className = 'cal-btn cal-arrow'; pauseBtn.id = 'drumPause';
+  function setPauseUI() {
+    pauseBtn.setAttribute('aria-label', userPaused ? 'Riprendi la rotazione automatica' : 'Ferma la rotazione automatica');
+    pauseBtn.innerHTML = userPaused
+      ? '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 5.500v13a1 1 0 0 0 1.500.9l10.500-6.500a1 1 0 0 0 0-1.700L9.500 4.600A1 1 0 0 0 8 5.500Z"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.200" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.200" fill="currentColor"/></svg>';
+  }
+  pauseBtn.addEventListener('click', function () { userPaused = !userPaused; setPauseUI(); schedule(); });
+  setPauseUI();
+  if (!reduce) prev.parentNode.insertBefore(pauseBtn, prev);
 
-  // Filtri
+  prev.addEventListener('click', function () { if (stage) step(-1); });
+  next.addEventListener('click', function () { if (stage) step(1); });
+  prev.disabled = false; next.disabled = false;
+
   chips.forEach(function (ch) {
     ch.addEventListener('click', function () {
       chips.forEach(function (x) { x.setAttribute('aria-pressed', String(x === ch)); });
       var f = ch.getAttribute('data-filter');
       build(f === 'all' ? all : all.filter(function (x) { return x.cat === f; }));
+      schedule();
     });
   });
 
-  // Tastiera, trascinamento e tocco
-  wrap.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
-    else if (e.key === 'Home') { e.preventDefault(); go(0); }
-    else if (e.key === 'End') { e.preventDefault(); go(n - 1); }
-  });
-
-  var sx = null, sy = 0, moved = false;
-  function bindDrag() {
-    book.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      sx = e.clientX; sy = e.clientY; moved = false;
-    });
-    book.addEventListener('pointermove', function (e) {
-      if (sx === null) return;
-      if (Math.abs(e.clientX - sx) > 12) moved = true;
-    });
-    var end = function (e) {
-      if (sx === null) return;
-      var dx = e.clientX - sx, dy = e.clientY - sy;
-      sx = null;
-      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.2) { go(dx < 0 ? idx + 1 : idx - 1); }
-    };
-    book.addEventListener('pointerup', end);
-    book.addEventListener('pointercancel', function () { sx = null; });
-    book.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-    book.addEventListener('dragstart', function (e) { e.preventDefault(); });
-  }
-
-  // Attivazione: il libro sostituisce l'elenco a scorrimento
   track.hidden = true;
   wrap.hidden = false;
-  document.documentElement.classList.add('has-book');
+  document.documentElement.classList.add('has-drum');
   build(all);
+  schedule();
 })();
