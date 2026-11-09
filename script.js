@@ -151,100 +151,161 @@
   }
 })();
 
-/* Percorsi: galleria orizzontale con filtri, frecce, trascinamento e schede che si ingrandiscono al centro */
+/* Percorsi: libro da sfogliare, una pagina alla volta con effetto di pagina che si gira */
 (function () {
   'use strict';
   var track = document.getElementById('track');
-  if (!track) return;
-  var cards = Array.prototype.slice.call(track.querySelectorAll('.pcard'));
+  var wrap = document.getElementById('bookWrap');
+  if (!track || !wrap) return;
+
   var chips = Array.prototype.slice.call(document.querySelectorAll('.chip-f'));
   var prev = document.getElementById('trackPrev');
   var next = document.getElementById('trackNext');
   var bar = document.getElementById('trackBar');
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function visible() { return cards.filter(function (c) { return !c.hidden; }); }
+  var ICONS = {
+    conf: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10h32a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H22l-9 7v-7H8a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2Z"/><path d="M14 19h20M14 26h12"/></svg>',
+    grup: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="17" cy="17" r="6"/><circle cx="33" cy="20" r="5"/><path d="M5 38c0-7 5-12 12-12s12 5 12 12M30 27c6 0 11 4 12 11"/></svg>',
+    cors: '<svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 12c-4-3-9-4-16-4v28c7 0 12 1 16 4 4-3 9-4 16-4V8c-7 0-12 1-16 4Z"/><path d="M24 12v28"/></svg>'
+  };
+  var CAPTION = {
+    conf: 'Serate aperte a tutti',
+    grup: 'Si lavora insieme, in piccolo gruppo',
+    cors: 'Percorsi strutturati, anche online'
+  };
 
-  // Filtri con ingresso a cascata
-  function applyFilter(f) {
-    var n = 0;
-    cards.forEach(function (c) {
-      var show = f === 'all' || c.getAttribute('data-cat') === f;
-      c.hidden = !show;
-      if (show) { c.style.setProperty('--d', Math.min(n, 8)); n++; }
-    });
-    track.classList.remove('in'); void track.offsetWidth; track.classList.add('in');
-    track.scrollTo({ left: 0, behavior: 'auto' });
-    update();
+  // Dati letti dall'elenco già presente in pagina (resta come alternativa senza JavaScript)
+  var all = Array.prototype.slice.call(track.querySelectorAll('.pcard')).map(function (li) {
+    var a = li.querySelector('.pc-link');
+    return {
+      cat: li.getAttribute('data-cat'),
+      tags: li.querySelector('.pc-top').innerHTML.replace(/<span class="pc-num"[^>]*>.*?<\/span>/, ''),
+      title: li.querySelector('h3').textContent,
+      desc: li.querySelector('p').textContent,
+      href: a.getAttribute('href'),
+      aria: a.getAttribute('aria-label')
+    };
+  });
+  if (!all.length) return;
+
+  var items = [], sheets = [], idx = 0, n = 0, book, live, count;
+
+  function pad(i) { return i < 10 ? '0' + i : '' + i; }
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+  function decoPage(i) {
+    var it = items[i];
+    return '<div class="page left deco" data-cat="' + it.cat + '" aria-hidden="true">' +
+      '<div class="deco-ico">' + ICONS[it.cat] + '</div>' +
+      '<div class="deco-num">' + pad(i + 1) + '</div>' +
+      '<div class="deco-of">di ' + n + '</div>' +
+      '<p class="deco-cat">' + CAPTION[it.cat] + '</p></div>';
   }
+
+  function textPage(i) {
+    var it = items[i];
+    return '<div class="page right text" data-cat="' + it.cat + '">' +
+      '<div class="pc-top">' + it.tags + '<span class="pc-num" aria-hidden="true">' + pad(i + 1) + '</span></div>' +
+      '<h3>' + esc(it.title) + '</h3>' +
+      '<p>' + esc(it.desc) + '</p>' +
+      '<a class="pc-link" href="' + esc(it.href) + '" target="_blank" rel="noopener" aria-label="' + esc(it.aria) + '">Chiedi informazioni</a></div>';
+  }
+
+  function build(list) {
+    items = list; n = list.length; idx = 0;
+    var html = '<div class="book" id="book" tabindex="0" role="group" aria-roledescription="libro da sfogliare" aria-label="Percorsi, usa le frecce per sfogliare">' +
+      '<div class="book-edge" aria-hidden="true"></div>' +
+      '<div class="leftbase">' + decoPage(0) + '</div>';
+    for (var i = 0; i < n; i++) {
+      html += '<div class="sheet" data-i="' + i + '"><div class="face front">' + textPage(i) + '</div>' +
+        '<div class="face back">' + (i + 1 < n ? decoPage(i + 1) : '') + '</div></div>';
+    }
+    html += '</div><div class="book-meta"><span class="book-count" id="bookCount"></span>' +
+      '<span class="book-hint">Sfoglia con le frecce o trascina la pagina</span></div>' +
+      '<p class="sr" id="bookLive" aria-live="polite"></p>';
+    wrap.innerHTML = html;
+    book = document.getElementById('book');
+    count = document.getElementById('bookCount');
+    live = document.getElementById('bookLive');
+    sheets = Array.prototype.slice.call(book.querySelectorAll('.sheet'));
+    sheets.forEach(function (s, i) { s.style.zIndex = n - i; s.inert = i !== 0; });
+    if (sheets[0]) sheets[0].classList.add('current');
+    bindDrag();
+    render(false);
+  }
+
+  function render(announce) {
+    sheets.forEach(function (s, i) {
+      var flipped = i < idx;
+      var was = s.classList.contains('flipped');
+      if (flipped !== was) {
+        s.classList.add('turning');
+        (function (el) { setTimeout(function () { el.classList.remove('turning'); }, 950); })(s);
+        s.classList.toggle('flipped', flipped);
+      }
+      s.style.zIndex = flipped ? n + i + 1 : n - i;
+      s.classList.toggle('current', i === idx);
+      s.inert = i !== idx;
+    });
+    count.textContent = pad(idx + 1) + ' / ' + pad(n);
+    prev.disabled = idx <= 0;
+    next.disabled = idx >= n - 1;
+    bar.style.width = ((idx + 1) / n * 100) + '%';
+    if (announce) live.textContent = 'Percorso ' + (idx + 1) + ' di ' + n + ': ' + items[idx].title;
+  }
+
+  function go(k, announce) {
+    k = Math.max(0, Math.min(n - 1, k));
+    if (k === idx) return;
+    idx = k;
+    render(announce !== false);
+  }
+
+  prev.addEventListener('click', function () { go(idx - 1); });
+  next.addEventListener('click', function () { go(idx + 1); });
+
+  // Filtri
   chips.forEach(function (ch) {
     ch.addEventListener('click', function () {
       chips.forEach(function (x) { x.setAttribute('aria-pressed', String(x === ch)); });
-      applyFilter(ch.getAttribute('data-filter'));
+      var f = ch.getAttribute('data-filter');
+      build(f === 'all' ? all : all.filter(function (x) { return x.cat === f; }));
     });
   });
 
-  // Frecce
-  function step(dir) {
-    track.scrollBy({ left: dir * Math.max(280, track.clientWidth * 0.7), behavior: reduce ? 'auto' : 'smooth' });
-  }
-  prev.addEventListener('click', function () { step(-1); });
-  next.addEventListener('click', function () { step(1); });
-
-  // Trascinamento con il mouse
-  var down = false, startX = 0, startL = 0, moved = 0;
-  track.addEventListener('pointerdown', function (e) {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return;
-    down = true; moved = 0; startX = e.clientX; startL = track.scrollLeft;
-  });
-  window.addEventListener('pointermove', function (e) {
-    if (!down) return;
-    var dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx));
-    if (moved > 5) { track.classList.add('dragging'); track.scrollLeft = startL - dx; }
-  });
-  window.addEventListener('pointerup', function () {
-    if (!down) return;
-    down = false;
-    if (moved > 5) {
-      // riallinea alla scheda più vicina
-      var left = track.scrollLeft, best = null, bd = 1e9;
-      visible().forEach(function (c) { var d = Math.abs(c.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft) - left); if (d < bd) { bd = d; best = c; } });
-      track.classList.remove('dragging');
-      if (best) track.scrollTo({ left: best.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft), behavior: reduce ? 'auto' : 'smooth' });
-    }
-  });
-  track.addEventListener('click', function (e) { if (moved > 5) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
-
-  // Luce che segue il puntatore sulla scheda
-  track.addEventListener('pointermove', function (e) {
-    var art = e.target.closest && e.target.closest('.pcard article');
-    if (!art) return;
-    var r = art.getBoundingClientRect();
-    art.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-    art.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  // Tastiera, trascinamento e tocco
+  wrap.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(n - 1); }
   });
 
-  // Avanzamento e scheda al centro leggermente più grande
-  var ticking = false;
-  function update() {
-    ticking = false;
-    var max = track.scrollWidth - track.clientWidth;
-    var ratio = track.clientWidth / track.scrollWidth;
-    bar.style.width = Math.max(12, ratio * 100) + '%';
-    bar.style.transform = 'translateX(' + (max > 0 ? (track.scrollLeft / max) * ((1 / ratio) - 1) * 100 : 0) + '%)';
-    prev.disabled = track.scrollLeft <= 4;
-    next.disabled = track.scrollLeft >= max - 4;
-    if (reduce) return;
-    var mid = track.scrollLeft + track.clientWidth / 2;
-    visible().forEach(function (c) {
-      var cx = c.offsetLeft + c.offsetWidth / 2;
-      var d = Math.min(1, Math.abs(cx - mid) / (track.clientWidth * 0.6));
-      c.firstElementChild.style.setProperty('--s', (1 - d * 0.06).toFixed(3));
-      c.style.opacity = (1 - d * 0.28).toFixed(3);
+  var sx = null, sy = 0, moved = false;
+  function bindDrag() {
+    book.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      sx = e.clientX; sy = e.clientY; moved = false;
     });
+    book.addEventListener('pointermove', function (e) {
+      if (sx === null) return;
+      if (Math.abs(e.clientX - sx) > 12) moved = true;
+    });
+    var end = function (e) {
+      if (sx === null) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.2) { go(dx < 0 ? idx + 1 : idx - 1); }
+    };
+    book.addEventListener('pointerup', end);
+    book.addEventListener('pointercancel', function () { sx = null; });
+    book.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    book.addEventListener('dragstart', function (e) { e.preventDefault(); });
   }
-  track.addEventListener('scroll', function () { if (!ticking) { ticking = true; window.requestAnimationFrame(update); } }, { passive: true });
-  window.addEventListener('resize', update);
-  update();
-  setTimeout(update, 400);
+
+  // Attivazione: il libro sostituisce l'elenco a scorrimento
+  track.hidden = true;
+  wrap.hidden = false;
+  document.documentElement.classList.add('has-book');
+  build(all);
 })();

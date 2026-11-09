@@ -183,6 +183,61 @@ em{font-style:italic}
 .track-progress{height:3px;border-radius:2px;background:#e3e3e8;margin:0 auto;max-width:360px;overflow:hidden}
 .track-progress span{display:block;height:100%;width:30%;border-radius:2px;background:var(--ink);transition:width .3s}
 
+/* Percorsi: libro da sfogliare */
+.book-wrap{width:min(980px,100%);margin:6px auto 0}
+.book-wrap[hidden]{display:none}
+.book{position:relative;height:clamp(360px,42vw,410px);perspective:2400px;touch-action:pan-y;user-select:none;-webkit-user-select:none;outline:none}
+.book:focus-visible{outline:3px solid #0a84ff;outline-offset:6px;border-radius:26px}
+.book-edge{position:absolute;left:50%;top:5px;width:50%;height:calc(100% - 10px);background:#fff;border-radius:0 22px 22px 0;
+  box-shadow:5px 4px 0 -1px #ececf0,10px 8px 0 -2px #e0e0e6,0 30px 50px -30px rgba(0,0,0,.35)}
+.leftbase,.sheet{position:absolute;top:0;height:100%}
+.leftbase{left:0;width:50%;z-index:0}
+.sheet{left:50%;width:50%;transform-style:preserve-3d;transform-origin:left center;
+  transition:transform .95s cubic-bezier(.5,.05,.2,1)}
+.sheet.flipped{transform:rotateY(-180deg)}
+.sheet.current:not(.flipped):hover{transform:rotateY(-5deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;border-radius:inherit;background:linear-gradient(90deg,rgba(0,0,0,.28),rgba(0,0,0,0) 65%)}
+.face.back::after{background:linear-gradient(270deg,rgba(0,0,0,.28),rgba(0,0,0,0) 65%)}
+.sheet.turning .face::after{animation:shade .95s ease}
+@keyframes shade{0%,100%{opacity:0}45%{opacity:1}}
+
+.page{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;--c:#0b6e6a;--cs:#e6f2f1}
+.page[data-cat="grup"]{--c:#3a5bd0;--cs:#e8edfc}
+.page[data-cat="cors"]{--c:#a85a06;--cs:#fdf0df}
+.page.right{border-radius:0 22px 22px 0;background:linear-gradient(90deg,#e9e9ee 0,#fff 6%)}
+.page.left{border-radius:22px 0 0 22px}
+.page.text{padding:clamp(26px,4vw,44px) clamp(24px,4vw,46px) clamp(22px,3vw,34px) clamp(30px,4.6vw,52px)}
+.page.text .pc-top{margin-bottom:auto}
+.page.text .pc-num{display:none}
+.page.text h3{font-size:clamp(1.5rem,2.8vw,2.1rem);line-height:1.1;margin:28px 0 14px}
+.page.text p{color:var(--ink-2);font-size:1.05rem;margin:0 0 22px}
+.page.text .pc-link{color:var(--c);margin-top:auto}
+.page.deco{align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--c);
+  background:linear-gradient(270deg,rgba(0,0,0,.09) 0,rgba(0,0,0,0) 9%),var(--cs)}
+.deco-ico{opacity:.9;margin-bottom:6px}
+.deco-num{font-size:clamp(4.6rem,11vw,7.5rem);font-weight:650;letter-spacing:-.05em;line-height:1;color:transparent;-webkit-text-stroke:2px var(--c)}
+.deco-of{font-size:.9rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-top:6px;opacity:.8}
+.deco-cat{margin:18px 0 0;font-size:1rem;color:var(--c);font-weight:560;max-width:22ch}
+.book-meta{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:30px auto 0;padding:0 6px;font-size:.9rem;color:var(--ink-2)}
+.book-count{font-weight:650;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+@media (max-width:760px){
+  .book{width:min(440px,100%);margin:0 auto;height:410px}
+  .book-edge{left:0;width:100%}
+  .leftbase{display:none}
+  .sheet{left:0;width:100%}
+  .face.back{display:none}
+  .sheet.flipped{transform:rotateY(-105deg);opacity:0;pointer-events:none;transition:transform .85s cubic-bezier(.5,.05,.2,1),opacity .3s .45s}
+  .page.right{border-radius:22px;background:linear-gradient(90deg,#e9e9ee 0,#fff 5%)}
+  .page.text{padding:28px 26px 22px 32px}
+  .page.text .pc-num{display:block}
+  .page.text h3{margin-top:18px}
+  .book-hint{display:none}
+  .book-meta{justify-content:center;width:min(440px,100%)}
+}
+
 /* Calendario di prenotazione (stile calendario settimanale) */
 .cal{--c:#0b6e6a;--c-soft:#e6f2f1;--c-ink:#064643;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(14px,3vw,24px);margin-bottom:28px;box-shadow:0 24px 60px -40px rgba(0,0,0,.25)}
 .cal[data-prof="v"]{--c:#3a5bd0;--c-soft:#e8edfc;--c-ink:#1f3489}

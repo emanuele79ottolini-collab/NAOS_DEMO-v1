@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="it_IT">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=book1">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -208,7 +208,7 @@
       <div class="section-head reveal">
         <p class="eyebrow">Percorsi</p>
         <h2>Per crescere insieme ad altri.</h2>
-        <p class="sub">Conferenze, gruppi e corsi aperti a chi desidera iniziare un cammino personale. Scorri le proposte o filtrale per tipo.</p>
+        <p class="sub">Conferenze, gruppi e corsi aperti a chi desidera iniziare un cammino personale. Sfoglia le proposte come un libro o filtrale per tipo.</p>
       </div>
       <div class="p-controls reveal">
         <div class="chips" role="group" aria-label="Filtra i percorsi">
@@ -218,8 +218,8 @@
           <button type="button" class="chip-f" data-filter="cors" aria-pressed="false">Corsi <span>6</span></button>
         </div>
         <div class="p-arrows">
-          <button type="button" class="cal-btn cal-arrow" id="trackPrev" aria-label="Percorsi precedenti">‹</button>
-          <button type="button" class="cal-btn cal-arrow" id="trackNext" aria-label="Percorsi successivi">›</button>
+          <button type="button" class="cal-btn cal-arrow" id="trackPrev" aria-label="Pagina precedente">‹</button>
+          <button type="button" class="cal-btn cal-arrow" id="trackNext" aria-label="Pagina successiva">›</button>
         </div>
       </div>
     </div>
@@ -371,6 +371,7 @@
           </li>
     </ul>
     <div class="wrap">
+      <div class="book-wrap" id="bookWrap" hidden></div>
       <div class="track-progress" aria-hidden="true"><span id="trackBar"></span></div>
 
       <figure class="wide-photo reveal" data-parallax>
@@ -522,7 +523,7 @@
   <a href="#appuntamento" class="accent">Prenota</a>
 </nav>
 
-<script src="script.js"></script>
-<script src="calendar.js"></script>
+<script src="script.js?v=book1"></script>
+<script src="calendar.js?v=book1"></script>
 </body>
 </html>
