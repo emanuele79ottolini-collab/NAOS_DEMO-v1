@@ -125,18 +125,38 @@
   refreshLinks();
 })();
 
-/* Video di presentazione: parte da solo (muto), si ferma sull'ultimo fotogramma, ha un comando ben visibile */
+/* Video di presentazione: versione leggera su telefono, parte da solo (muto) solo se la connessione e le preferenze lo permettono,
+   si ferma sull'ultimo fotogramma, comandi ben visibili per pausa e audio */
 (function () {
   'use strict';
   var v = document.getElementById('filmVideo');
   var b = document.getElementById('filmBtn');
   if (!v || !b) return;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  var lite = !!(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '')));
+  var big = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
   var LABELS = { playing: 'Metti in pausa il video', paused: 'Riproduci il video', ended: 'Rivedi il video' };
 
   function set(state) { b.setAttribute('data-state', state); b.setAttribute('aria-label', LABELS[state]); }
+  var loaded = false;
+  function load() {
+    if (loaded) return;
+    loaded = true;
+    v.src = (big && !lite) ? v.getAttribute('data-hd') : v.getAttribute('data-sd');
+  }
+  function play() {
+    load();
+    if (v.ended) v.currentTime = 0;
+    var p = v.play();
+    if (p && p.catch) p.catch(function () { set('paused'); });
+  }
 
   v.removeAttribute('controls');
+  v.muted = true;
+  b.hidden = false;
+  set('paused');
+
   // Audio del video: spento all'apertura, si accende solo su richiesta, con volume regolabile
   var sBox = document.getElementById('filmSound'), sBtn = document.getElementById('soundBtn');
   var sVol = document.getElementById('soundVol'), sLab = document.getElementById('soundLabel');
@@ -160,8 +180,7 @@
         if (+sVol.value === 0) sVol.value = '35';
         v.volume = (+sVol.value) / 100;
         v.muted = false;
-        if (v.ended) v.currentTime = 0;
-        if (v.paused) { var q = v.play(); if (q && q.catch) q.catch(function () {}); }
+        if (v.ended || v.paused) play();
       } else { v.muted = true; }
       soundUI();
     });
@@ -174,27 +193,21 @@
     });
     v.addEventListener('volumechange', soundUI);
   }
-  v.muted = true;
-  b.hidden = false;
-  set('paused');
 
   v.addEventListener('play', function () { set('playing'); });
   v.addEventListener('pause', function () { if (!v.ended) set('paused'); });
   v.addEventListener('ended', function () { set('ended'); });
 
   b.addEventListener('click', function () {
-    if (v.ended) v.currentTime = 0;
-    if (v.paused || v.ended) { var p = v.play(); if (p && p.catch) p.catch(function () { set('paused'); }); }
-    else v.pause();
+    if (v.ended || v.paused) play(); else v.pause();
   });
 
-  if (reduce) {
-    // Niente movimento automatico: si mostra l'ultimo fotogramma, il video parte solo su richiesta
-    var last = function () { if (isFinite(v.duration)) v.currentTime = Math.max(0, v.duration - 0.05); };
-    if (v.readyState >= 1) last(); else v.addEventListener('loadedmetadata', last, { once: true });
+  if (reduce || lite) {
+    // Niente movimento né scaricamento automatico: resta l'immagine finale, il video parte solo su richiesta
+    v.poster = 'assets/intro-end.webp';
   } else {
-    var p = v.play();
-    if (p && p.catch) p.catch(function () { set('paused'); });
+    v.preload = 'auto';
+    play();
   }
 })();
 
@@ -247,7 +260,7 @@
     return '<div class="dcard" data-cat="' + it.cat + '"' + (real ? ' role="group" aria-roledescription="scheda" aria-label="Percorso ' + (i + 1) + ' di ' + n + '"' : ' aria-hidden="true"') + '>' +
       '<div class="pc-top">' + it.tags + '<span class="pc-num" aria-hidden="true">' + pad(i + 1) + '</span></div>' +
       '<h3>' + esc(it.title) + '</h3><p>' + esc(it.desc) + '</p>' +
-      '<a class="pc-link" href="' + esc(it.href) + '" target="_blank" rel="noopener" aria-label="' + esc(it.aria) + '"' + (real ? '' : ' tabindex="-1"') + '>Chiedi informazioni</a></div>';
+      '<a class="pc-link" href="' + esc(it.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(it.aria) + '"' + (real ? '' : ' tabindex="-1"') + '>Chiedi informazioni</a></div>';
   }
 
   function build(list) {
