@@ -421,3 +421,54 @@ body.plain{padding-bottom:0}
 .foot-brand{align-items:flex-start}
 .privacy-note a,.cal-note a{font-weight:560}
 body.plain .bar-actions .btn{display:inline-flex}
+
+/* Galleria sfogliabile */
+.gal{position:relative}
+.gal-track{list-style:none;margin:0;padding:6px 20px 8px;display:flex;align-items:flex-start;gap:clamp(14px,2vw,26px);overflow-x:auto;
+  scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;cursor:grab;touch-action:pan-x pan-y}
+.gal-track::-webkit-scrollbar{display:none}
+.gal-track.dragging{cursor:grabbing;scroll-snap-type:none}
+.gal-track:focus-visible{outline:3px solid #0a84ff;outline-offset:-3px;border-radius:12px}
+.gal{--h:520px}
+.gal-slide{flex:0 0 auto;width:min(calc(var(--ar) * var(--h)),84vw);scroll-snap-align:center;scroll-snap-stop:always}
+.gal-slide figure{margin:0;transform:scale(var(--s,1));opacity:var(--o,1);transform-origin:center top;transition:transform .5s var(--ease),opacity .5s var(--ease)}
+.gal-open{display:block;border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#e8f0ef,#dfe7ee);box-shadow:0 30px 60px -36px rgba(0,0,0,.45);cursor:zoom-in}
+.gal-open img{display:block;width:100%;height:auto;aspect-ratio:var(--ar);object-fit:cover;-webkit-user-drag:none;user-select:none}
+.gal-open:focus-visible{outline:3px solid #0a84ff;outline-offset:4px}
+.gal-slide figcaption{margin-top:16px;text-align:center;font-size:.95rem;color:var(--ink-2);padding:0 8px}
+.gal-ctrl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:26px}
+.gal-count{font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:.05em;min-width:5.2em;text-align:center}
+.gal-dots{display:flex;gap:4px;justify-content:center;margin-top:10px}
+.gal-dot{width:30px;height:30px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.gal-dot::before{content:"";width:8px;height:8px;border-radius:50%;background:#cfcfd6;transition:width .35s var(--ease),background-color .35s}
+.gal-dot[aria-current="true"]::before{width:24px;border-radius:4px;background:var(--ink)}
+.gal-hint{text-align:center;color:var(--ink-2);font-size:.88rem;margin:12px 20px 0}
+
+/* Foto a schermo intero */
+html.lb-open{overflow:hidden}
+.lb{border:0;padding:0;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;background:rgba(255,255,255,.97);color:var(--ink)}
+.lb:not([open]){display:none}
+.lb[open]{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:1fr auto;align-items:center;gap:0 8px;padding:56px 12px 12px;animation:lbIn .35s var(--ease)}
+@keyframes lbIn{from{opacity:0}to{opacity:1}}
+.lb::backdrop{background:transparent}
+.lb-fig{grid-column:2;grid-row:1;margin:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:100%}
+.lb-fig img{max-width:100%;max-height:calc(100dvh - 190px);width:auto;height:auto;object-fit:contain;border-radius:16px;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);touch-action:pan-y;user-select:none;-webkit-user-drag:none}
+.lb-fig figcaption{text-align:center;color:var(--ink-2);font-size:1rem;max-width:60ch}
+.lb-nav,.lb-close{width:48px;height:48px;border-radius:50%;border:0;background:var(--tint);color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background-color .25s,transform .2s}
+.lb-nav:hover,.lb-close:hover{background:#e8e8ed}
+.lb-nav:active,.lb-close:active{transform:scale(.92)}
+.lb-prev{grid-column:1;grid-row:1}.lb-next{grid-column:3;grid-row:1}
+.lb-close{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;font-size:1.6rem}
+.lb-count{grid-column:1 / -1;grid-row:2;text-align:center;margin:10px 0 0;font-weight:650;letter-spacing:.05em;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+@media (max-width:760px){
+  .gal{--h:400px}
+  .gal-track{align-items:center}
+  .lb[open]{grid-template-columns:minmax(0,1fr);padding:60px 10px 12px}
+  .lb-fig{grid-column:1}
+  .lb-prev,.lb-next{grid-row:2;position:static}
+  .lb-nav{position:absolute;bottom:14px}
+  .lb-prev{left:14px}.lb-next{right:14px}
+  .lb-count{grid-row:2;margin:0;align-self:end;padding-bottom:26px}
+  .lb-fig img{max-height:calc(100dvh - 200px)}
+}
+@media (min-width:761px) and (max-width:1100px){.gal{--h:420px}}

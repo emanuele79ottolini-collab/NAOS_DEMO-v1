@@ -416,3 +416,141 @@
   build(all);
   schedule();
 })();
+
+/* Galleria: scorrimento a schede centrate, frecce, trascinamento, tastiera e foto a schermo intero */
+(function () {
+  'use strict';
+  var track = document.getElementById('galTrack');
+  if (!track) return;
+  var slides = Array.prototype.slice.call(track.querySelectorAll('.gal-slide'));
+  var prev = document.getElementById('galPrev'), next = document.getElementById('galNext');
+  var count = document.getElementById('galCount'), dotsBox = document.getElementById('galDots');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var n = slides.length, idx = 0, moved = 0, ticking = false;
+
+  function pad(i) { return i < 10 ? '0' + i : '' + i; }
+  function behavior() { return reduce ? 'auto' : 'smooth'; }
+
+  // Spazi ai lati: la prima e l'ultima foto possono arrivare al centro
+  function edges() {
+    var w = track.clientWidth;
+    track.style.paddingLeft = Math.max(20, (w - slides[0].offsetWidth) / 2) + 'px';
+    track.style.paddingRight = Math.max(20, (w - slides[n - 1].offsetWidth) / 2) + 'px';
+  }
+
+  function centerOf(i) { var s = slides[i]; return s.offsetLeft + s.offsetWidth / 2 - track.clientWidth / 2; }
+  function go(i, smooth) {
+    i = Math.max(0, Math.min(n - 1, i));
+    track.scrollTo({ left: centerOf(i), behavior: smooth === false ? 'auto' : behavior() });
+  }
+
+  // Dots
+  var dots = slides.map(function (s, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'gal-dot'; b.setAttribute('aria-label', 'Vai alla foto ' + (i + 1) + ' di ' + n);
+    b.addEventListener('click', function () { go(i); });
+    dotsBox.appendChild(b); return b;
+  });
+
+  function update() {
+    ticking = false;
+    var mid = track.scrollLeft + track.clientWidth / 2, best = 0, bd = 1e9, w = track.clientWidth;
+    slides.forEach(function (s, i) {
+      var d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid);
+      if (d < bd) { bd = d; best = i; }
+      if (!reduce) {
+        var f = Math.min(1, d / (w * 0.55));
+        s.firstElementChild.style.setProperty('--s', (1 - f * 0.07).toFixed(3));
+        s.firstElementChild.style.setProperty('--o', (1 - f * 0.45).toFixed(3));
+      }
+    });
+    idx = best;
+    count.textContent = pad(idx + 1) + ' / ' + pad(n);
+    dots.forEach(function (d, i) { d.setAttribute('aria-current', String(i === idx)); });
+    prev.disabled = idx <= 0; next.disabled = idx >= n - 1;
+  }
+  track.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', function () { edges(); update(); });
+  prev.addEventListener('click', function () { go(idx - 1); });
+  next.addEventListener('click', function () { go(idx + 1); });
+  track.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(n - 1); }
+  });
+
+  // Trascinamento con il mouse (col dito si usa lo scorrimento nativo)
+  var down = false, sx = 0, sl = 0;
+  track.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    down = true; moved = 0; sx = e.clientX; sl = track.scrollLeft;
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!down) return;
+    var dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx));
+    if (moved > 6) { track.classList.add('dragging'); track.scrollLeft = sl - dx; }
+  });
+  window.addEventListener('pointerup', function () {
+    if (!down) return;
+    down = false;
+    if (moved > 6) { track.classList.remove('dragging'); go(idx); }
+  });
+  track.addEventListener('click', function (e) { if (moved > 6) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
+  track.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+  /* ---------- Foto a schermo intero ---------- */
+  var lb = document.getElementById('lb');
+  var lbImg = document.getElementById('lbImg'), lbCap = document.getElementById('lbCap'), lbCount = document.getElementById('lbCount');
+  var cur = 0;
+  var data = slides.map(function (s) {
+    var a = s.querySelector('.gal-open'), img = s.querySelector('img');
+    return { href: a.getAttribute('data-full') || a.getAttribute('href'), set: a.getAttribute('data-set') || '', alt: img.getAttribute('alt'), cap: (s.querySelector('figcaption') || {}).textContent || '' };
+  });
+
+  function show(i) {
+    cur = (i + n) % n;
+    var d = data[cur];
+    lbImg.src = d.href; lbImg.alt = d.alt;
+    if (d.set) { lbImg.srcset = d.set; lbImg.sizes = '92vw'; } else { lbImg.removeAttribute('srcset'); }
+    lbCap.textContent = d.cap;
+    lbCount.textContent = pad(cur + 1) + ' / ' + pad(n);
+    [cur + 1, cur - 1].forEach(function (k) { var x = new Image(); x.src = data[(k + n) % n].href; });
+    go(cur, false); // la galleria sotto resta allineata alla foto aperta
+  }
+  function open(i) {
+    if (!lb || typeof lb.showModal !== 'function') return false;
+    show(i);
+    lb.showModal();
+    document.documentElement.classList.add('lb-open');
+    return true;
+  }
+  function close() { if (lb && lb.open) lb.close(); document.documentElement.classList.remove('lb-open'); }
+  if (lb) {
+    lb.addEventListener('close', function () { document.documentElement.classList.remove('lb-open'); });
+    document.getElementById('lbClose').addEventListener('click', close);
+    document.getElementById('lbPrev').addEventListener('click', function () { show(cur - 1); });
+    document.getElementById('lbNext').addEventListener('click', function () { show(cur + 1); });
+    lb.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(cur + 1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); show(cur - 1); }
+    });
+    // clic fuori dalla foto: chiude
+    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    // scorrimento con il dito o il mouse sulla foto
+    var tx = null, ty = 0;
+    lbImg.addEventListener('pointerdown', function (e) { tx = e.clientX; ty = e.clientY; });
+    window.addEventListener('pointerup', function (e) {
+      if (tx === null) return;
+      var dx = e.clientX - tx, dy = e.clientY - ty; tx = null;
+      if (lb.open && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) show(cur + (dx < 0 ? 1 : -1));
+    });
+    slides.forEach(function (s, i) {
+      s.querySelector('.gal-open').addEventListener('click', function (e) { if (open(i)) e.preventDefault(); });
+    });
+  }
+
+  edges();
+  update();
+  setTimeout(function () { edges(); update(); }, 400);
+})();
