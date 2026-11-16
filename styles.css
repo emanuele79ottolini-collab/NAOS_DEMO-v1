@@ -201,7 +201,7 @@ em{font-style:italic}
 .drum-wrap{width:100%;margin:8px auto 0}
 .drum-wrap[hidden]{display:none}
 .drum-stage{--cw:280px;--ch:350px;position:relative;height:calc(var(--ch) + 90px);perspective:2200px;perspective-origin:50% 42%;overflow:hidden;
-  touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}
+  touch-action:pan-y;overscroll-behavior-x:contain;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}
 .drum-stage.dragging{cursor:grabbing}
 .drum-stage:focus-visible{outline:3px solid #0a84ff;outline-offset:-3px;border-radius:12px}
 .drum{position:absolute;left:50%;top:46%;width:0;height:0;transform-style:preserve-3d;will-change:transform}

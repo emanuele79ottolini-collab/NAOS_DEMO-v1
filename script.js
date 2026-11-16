@@ -287,19 +287,20 @@
       var e = norm(-i * theta + ang), a = Math.abs(e);
       var vis = a <= 78;
       var op = vis ? Math.max(0.35, 1 - a / 130) : 0;
-      var key = vis ? op.toFixed(2) : 'h';
+      var key = vis ? op.toFixed(1) : 'h';
       if (force || cur[i] !== key) {
         cur[i] = key;
         cards[i].style.visibility = vis ? 'visible' : 'hidden';
-        cards[i].style.opacity = vis ? op.toFixed(2) : '0';
+        cards[i].style.opacity = vis ? op.toFixed(1) : '0';
       }
     }
   }
 
   function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-  function turnTo(target) {
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function turnTo(target, dur, fn) {
     if (reduce) { ang = target; vel = 0; render(); return; }
-    tween = { from: ang, to: target, t0: performance.now(), dur: 520 };
+    tween = { from: ang, to: target, t0: performance.now(), dur: dur || 520, fn: fn || ease };
     vel = 0;
     last = 0;
     schedule();
@@ -314,7 +315,7 @@
     last = t;
     if (tween) {
       var p = Math.min(1, (t - tween.t0) / tween.dur);
-      ang = tween.from + (tween.to - tween.from) * ease(p);
+      ang = tween.from + (tween.to - tween.from) * tween.fn(p);
       if (p >= 1) tween = null;
     } else if (!dragging) {
       if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.93, dt / 16); } else vel = 0;
@@ -325,29 +326,49 @@
   function schedule() { if (!raf && inView) raf = requestAnimationFrame(loop); }
 
   function bind() {
-    var sx = 0, lx = 0, lt = 0, down = false;
+    var GAIN = 1.9;          // gradi di rotazione per ogni pixel trascinato, rispetto alla scheda: il tamburo segue il dito e anticipa un poco
+    var lx = 0, down = false, samples = [];
     stage.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      down = true; moved = 0; sx = lx = e.clientX; lt = performance.now(); tween = null; vel = 0;
+      down = true; moved = 0; lx = e.clientX; tween = null; vel = 0;
+      samples = [{ t: performance.now(), x: e.clientX }];
     });
     stage.addEventListener('pointermove', function (e) {
       if (!down) return;
-      var dx = e.clientX - lx, now = performance.now();
-      moved += Math.abs(dx);
-      if (moved > 6) {
-        if (!dragging) { dragging = true; stage.classList.add('dragging'); try { stage.setPointerCapture(e.pointerId); } catch (x) {} }
-        ang -= dx * K * 1.3;
-        vel = -(dx * K * 1.3) / Math.max(8, now - lt);
-        vel = Math.max(-0.1, Math.min(0.1, vel));
-        lx = e.clientX; lt = now;
-        render(); schedule();
+      // si usano tutti i punti intermedi, cosi il movimento segue il dito senza scatti
+      var evs = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
+      if (!evs.length) evs = [e];
+      for (var i = 0; i < evs.length; i++) {
+        var x = evs[i].clientX, dx = x - lx;
+        moved += Math.abs(dx);
+        if (moved > 6) {
+          if (!dragging) { dragging = true; stage.classList.add('dragging'); try { stage.setPointerCapture(e.pointerId); } catch (z) {} }
+          ang -= dx * K * GAIN;
+        }
+        lx = x;
+        samples.push({ t: evs[i].timeStamp || performance.now(), x: x });
       }
+      if (samples.length > 12) samples.splice(0, samples.length - 12);
+      if (dragging) { last = 0; schedule(); }
     });
     var up = function () {
       if (!down) return;
       down = false;
-      if (dragging) { dragging = false; stage.classList.remove('dragging'); }
-      schedule();
+      if (!dragging) return;
+      dragging = false; stage.classList.remove('dragging');
+      // velocita' del dito negli ultimi ~100 ms (px al ms)
+      var now = performance.now(), a = null, b = samples[samples.length - 1];
+      for (var i = samples.length - 1; i >= 0; i--) { if (b.t - samples[i].t <= 100) a = samples[i]; else break; }
+      var v = (a && b.t > a.t && now - b.t < 90) ? (b.x - a.x) / (b.t - a.t) : 0;   // px/ms, positivo verso destra
+      var base = ang, near = Math.round(base / theta) * theta, target;
+      if (Math.abs(v) < 0.25) target = near;                                          // rilascio lento: si ferma sulla scheda piu' vicina
+      else {
+        var nc = Math.min(7, Math.max(1, Math.round(Math.abs(v) * 2.4)));         // lancio: piu' e' rapido, piu' schede scorrono
+        target = near - Math.sign(v) * nc * theta;
+        if (Math.abs(target - base) < theta * 0.6) target = near - Math.sign(v) * theta;
+      }
+      var dist = Math.abs(target - base) / theta;
+      turnTo(target, Math.min(1100, 320 + dist * 110), easeOut);
     };
     stage.addEventListener('pointerup', up);
     stage.addEventListener('pointercancel', up);
