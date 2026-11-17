@@ -236,14 +236,21 @@
   });
   if (!all.length) return;
 
-  var stage, drum, cards = [], slots = [], total = 0, theta = 20, R = 800, CW = 280, GAP = 16, K = 0.07;
+  var TH = 30;   // angolo tra una scheda e la successiva: piu' e' grande, piu' le schede laterali sono inclinate
+  var stage, drum, cards = [], slots = [], total = 0, theta = TH, R = 800, CW = 280, GAP = 16, K = 0.07;
   var ang = 0, vel = 0, tween = null, dragging = false, inView = true;
   var last = 0, raf = 0, moved = 0, lastScrollY = window.scrollY;
+  // Scorrimento lento in autonomia: si ferma col mouse sopra, col dito, da tastiera o col pulsante di pausa
+  var AUTO = 0.0042, av = 0, hover = false, focused = false, paused = false, holdUntil = 0, autoOn = !reduce;
+  var playBtn = document.getElementById('drumPlay');
   var cur = [];
 
   function pad(i) { return i < 10 ? '0' + i : '' + i; }
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
   function norm(a) { return ((a + 180) % 360 + 360) % 360 - 180; }
+  function wrapA(a) { var P = total * theta; return ((a + P / 2) % P + P) % P - P / 2; }
+  function hold(ms) { holdUntil = performance.now() + ms; }
+  function wantAuto() { return autoOn && !paused && !hover && !focused; }
 
   function sizes() {
     var w = wrap.clientWidth;
@@ -253,7 +260,7 @@
     stage.style.setProperty('--ch', h + 'px');
     R = (CW + GAP) / (2 * Math.sin((theta / 2) * Math.PI / 180));
     K = theta / (CW + GAP);
-    cards.forEach(function (c, i) { c.style.transform = 'rotateY(' + (-i * theta) + 'deg) translateZ(' + (-R) + 'px)'; });
+    drum.style.transform = 'translateZ(' + R + 'px)';
   }
 
   function cardHTML(it, i, real, n) {
@@ -265,11 +272,11 @@
 
   function build(list) {
     var n = list.length, reps = n >= 12 ? 1 : Math.ceil(12 / n);
-    total = n * reps; theta = 360 / total;
-    var html = '<div class="drum-stage" id="drumStage" tabindex="0" role="group" aria-roledescription="carosello" aria-label="Percorsi: trascina o usa le frecce per scorrere">' +
+    total = n * reps; theta = TH;
+    var html = '<div class="drum-stage" id="drumStage" tabindex="0" role="group" aria-roledescription="carosello" aria-label="Percorsi: scorrono lentamente; passa sopra per fermarli, trascina o usa le frecce per tornare indietro o andare avanti">' +
       '<div class="drum" id="drum">';
     for (var k = 0; k < total; k++) html += cardHTML(list[k % n], k % n, k < n, n);
-    html += '</div></div><p class="drum-hint">Trascina, scorri o usa le frecce per sfogliare i percorsi.</p>';
+    html += '</div></div><p class="drum-hint">Passa sopra per fermarli. Trascina o usa le frecce per tornare indietro o andare avanti.</p>';
     wrap.innerHTML = html;
     stage = document.getElementById('drumStage');
     drum = document.getElementById('drum');
@@ -282,16 +289,17 @@
   }
 
   function render(force) {
-    drum.style.transform = 'translateZ(' + R + 'px) rotateY(' + ang.toFixed(3) + 'deg)';
     for (var i = 0; i < total; i++) {
-      var e = norm(-i * theta + ang), a = Math.abs(e);
+      var e = wrapA(-i * theta + ang), a = Math.abs(e);
       var vis = a <= 78;
       var op = vis ? Math.max(0.35, 1 - a / 130) : 0;
       var key = vis ? op.toFixed(1) : 'h';
+      var c = cards[i];
+      if (vis) c.style.transform = 'rotateY(' + e.toFixed(2) + 'deg) translateZ(' + (-R) + 'px)';
       if (force || cur[i] !== key) {
         cur[i] = key;
-        cards[i].style.visibility = vis ? 'visible' : 'hidden';
-        cards[i].style.opacity = vis ? op.toFixed(1) : '0';
+        c.style.visibility = vis ? 'visible' : 'hidden';
+        c.style.opacity = vis ? op.toFixed(1) : '0';
       }
     }
   }
@@ -308,7 +316,7 @@
   function centerNear() { return Math.round(-ang / theta); }
   function step(dir) { turnTo(Math.round(ang / theta) * theta + dir * theta); }
 
-    function loop(t) {
+  function loop(t) {
     raf = 0;
     if (!inView) { last = 0; return; }
     var dt = last ? Math.min(50, t - last) : 16;
@@ -316,12 +324,17 @@
     if (tween) {
       var p = Math.min(1, (t - tween.t0) / tween.dur);
       ang = tween.from + (tween.to - tween.from) * tween.fn(p);
-      if (p >= 1) tween = null;
+      if (p >= 1) { tween = null; hold(2200); }
+      av = 0;
     } else if (!dragging) {
-      if (Math.abs(vel) > 0.0004) { ang += vel * dt; vel *= Math.pow(0.93, dt / 16); } else vel = 0;
-    }
+      // velocita' di scorrimento automatico: sale e scende dolcemente, senza scatti
+      var goal = (wantAuto() && t >= holdUntil) ? AUTO : 0;
+      av += (goal - av) * (1 - Math.exp(-dt / 280));
+      if (Math.abs(av) < 0.00002 && goal === 0) av = 0;
+      ang += av * dt;
+    } else av = 0;
     render();
-    if (tween || dragging || Math.abs(vel) > 0.0004) schedule();
+    if (tween || dragging || av !== 0 || wantAuto()) schedule();
   }
   function schedule() { if (!raf && inView) raf = requestAnimationFrame(loop); }
 
@@ -330,7 +343,7 @@
     var lx = 0, down = false, samples = [];
     stage.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      down = true; moved = 0; lx = e.clientX; tween = null; vel = 0;
+      down = true; moved = 0; lx = e.clientX; tween = null; vel = 0; hold(2500);
       samples = [{ t: performance.now(), x: e.clientX }];
     });
     stage.addEventListener('pointermove', function (e) {
@@ -379,15 +392,21 @@
       if (moved > 6) { e.preventDefault(); e.stopPropagation(); moved = 0; return; }
       var c = e.target.closest('.dcard');
       if (!c || e.target.closest('a')) return;
-      var i = cards.indexOf(c), eff = norm(-i * theta + ang);
+      var i = cards.indexOf(c), eff = wrapA(-i * theta + ang);
       if (Math.abs(eff) > theta / 2) turnTo(ang - eff);
     }, true);
     stage.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
+    // Il mouse sopra ferma lo scorrimento; uscendo riparte piano piano
+    stage.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hover = true; });
+    stage.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; hold(500); schedule(); } });
+    stage.addEventListener('focusin', function (e) { try { focused = e.target.matches(':focus-visible'); } catch (x) { focused = true; } });
+    stage.addEventListener('focusout', function () { focused = false; hold(800); schedule(); });
+
     // Focus da tastiera: la scheda raggiunta va al centro
     stage.addEventListener('focusin', function (e) {
       var c = e.target.closest('.dcard');
-      if (c) { var i = cards.indexOf(c), eff = norm(-i * theta + ang); if (Math.abs(eff) > 1) turnTo(ang - eff); }
+      if (c) { var i = cards.indexOf(c), eff = wrapA(-i * theta + ang); if (Math.abs(eff) > 1) turnTo(ang - eff); }
     });
     stage.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
@@ -418,8 +437,18 @@
   }
 
   // Comandi
-  prev.addEventListener('click', function () { if (stage) step(-1); });
-  next.addEventListener('click', function () { if (stage) step(1); });
+  prev.addEventListener('click', function () { if (stage) { hold(3500); step(-1); } });
+  next.addEventListener('click', function () { if (stage) { hold(3500); step(1); } });
+  if (playBtn) {
+    if (!autoOn) playBtn.hidden = true;
+    playBtn.addEventListener('click', function () {
+      paused = !paused;
+      playBtn.setAttribute('aria-pressed', String(paused));
+      playBtn.setAttribute('aria-label', paused ? 'Riprendi lo scorrimento automatico' : 'Metti in pausa lo scorrimento automatico');
+      playBtn.textContent = paused ? '▶' : '❚❚';
+      last = 0; schedule();
+    });
+  }
   prev.disabled = false; next.disabled = false;
 
   chips.forEach(function (ch) {
